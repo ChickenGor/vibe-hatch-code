@@ -1,0 +1,35 @@
+{
+  "name": "vibe-hatch-code",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.15",
+    "@ai-sdk/deepseek": "^3.0.11",
+    "@ai-sdk/google": "^4.0.16",
+    "@ai-sdk/groq": "^4.0.11",
+    "@ai-sdk/mistral": "^4.0.11",
+    "@ai-sdk/moonshotai": "^3.0.12",
+    "@ai-sdk/openai": "^4.0.14",
+    "@ai-sdk/togetherai": "^3.0.11",
+    "@ai-sdk/xai": "^4.0.13",
+    "@google/genai": "latest",
+    "ai": "^7.0.28",
+    "canvas-confetti": "^1.9.4",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest"
+  }
+}

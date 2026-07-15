@@ -1,0 +1,11 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/brainstorm/route.js")
+R.c("server/chunks/[root-of-the-server]__12z68qw._.js")
+R.c("server/chunks/0dra_next_dist_0wy_c16._.js")
+R.c("server/chunks/0dra_google-auth-library_0u117r8._.js")
+R.c("server/chunks/0dra_ws_1be5j3e._.js")
+R.c("server/chunks/0dra_@google_genai_dist_node_index_mjs_18xfk-t._.js")
+R.c("server/chunks/0dra_14mn_br._.js")
+R.c("server/chunks/[root-of-the-server]__1a0xsgz._.js")
+R.c("server/chunks/1s7j_Vibe Hatch Code__next-internal_server_app_api_brainstorm_route_actions_0bdbifr.js")
+R.m("[project]/Desktop/Jimmy/Project/Vibe Hatch Code/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/Desktop/Jimmy/Project/Vibe Hatch Code/app/api/brainstorm/route.js [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/Desktop/Jimmy/Project/Vibe Hatch Code/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/Desktop/Jimmy/Project/Vibe Hatch Code/app/api/brainstorm/route.js [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

@@ -1,0 +1,5 @@
+{
+  "/api/brainstorm/route": "app/api/brainstorm/route.js",
+  "/api/compile/route": "app/api/compile/route.js",
+  "/page": "app/page.js"
+}

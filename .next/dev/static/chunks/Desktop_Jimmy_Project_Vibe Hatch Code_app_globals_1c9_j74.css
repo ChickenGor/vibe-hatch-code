@@ -1,0 +1,239 @@
+/* [project]/Desktop/Jimmy/Project/Vibe Hatch Code/app/globals.css [app-client] (css) */
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+:root {
+  --bg-main: #030305;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --glass-bg: #12121899;
+  --glass-border: #ffffff14;
+  --glass-highlight: #ffffff1f;
+  --glass-shadow: #00000080;
+  --input-bg: #ffffff08;
+  --input-border: #ffffff14;
+  --input-focus: #10b98166;
+  --choice-bg: #ffffff05;
+  --choice-hover: #ffffff0f;
+  --code-bg: #00000073;
+  --orb-1: #10b98126;
+  --orb-2: #4f46e51f;
+}
+
+.light-mode {
+  --bg-main: #f1f5f9 !important;
+  --text-main: #0f172a !important;
+  --text-muted: #334155 !important;
+  --text-dim: #64748b !important;
+  --glass-bg: #ffffffd9 !important;
+  --glass-border: #fff !important;
+  --glass-highlight: #fff !important;
+  --glass-shadow: #94a3b840 !important;
+  --input-bg: #fff !important;
+  --input-border: #94a3b866 !important;
+  --input-focus: #10b98199 !important;
+  --choice-bg: #f1f5f9cc !important;
+  --choice-hover: #fff !important;
+  --code-bg: #0f172a !important;
+  --orb-1: #10b98140 !important;
+  --orb-2: #3b82f633 !important;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background-color .4s, color .4s;
+  overflow-x: hidden;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-jetbrains), "Courier New", monospace !important;
+}
+
+.light-mode {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.titanium-gradient {
+  background: linear-gradient(135deg, var(--text-main) 0%, #94a3b8 50%, #10b981 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.liquid-glass-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 40px var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-highlight);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  transition: all .3s cubic-bezier(.16, 1, .3, 1);
+}
+
+.liquid-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  width: 100%;
+  color: var(--text-main);
+  border-radius: .75rem;
+  outline: none;
+  padding: .75rem 1rem;
+  font-size: .875rem;
+  transition: all .2s;
+  box-shadow: inset 0 2px 4px #00000008;
+}
+
+.liquid-input:focus {
+  background: var(--choice-hover);
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px #10b98126;
+}
+
+.liquid-choice {
+  background: var(--choice-bg);
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+  border-radius: .875rem;
+  padding: 1rem 1.25rem;
+  transition: all .25s cubic-bezier(.16, 1, .3, 1);
+}
+
+.liquid-choice:hover {
+  background: var(--choice-hover);
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+.liquid-choice.selected {
+  background: #10b9811f;
+  border-color: #10b981;
+  box-shadow: 0 0 20px #10b98126;
+}
+
+.liquid-btn-primary {
+  cursor: pointer;
+  background: linear-gradient(#fff3 0%, #fff0 100%), #10b981;
+  border: 1px solid #fff6;
+  border-radius: .75rem;
+  padding: .75rem 1.5rem;
+  font-weight: 600;
+  transition: all .2s cubic-bezier(.16, 1, .3, 1);
+  box-shadow: 0 10px 25px -5px #10b98166, inset 0 1px 1px #fff6;
+  color: #fff !important;
+}
+
+.light-mode .liquid-btn-primary {
+  background: linear-gradient(#fff3 0%, #fff0 100%), #059669 !important;
+  border-color: #047857 !important;
+  box-shadow: 0 10px 20px -5px #05966966 !important;
+}
+
+.liquid-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: scale(1.01);
+}
+
+@keyframes spatial-pulse {
+  0%, 100% {
+    opacity: .6;
+    transform: scale(.99);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.liquid-btn-loading {
+  background: var(--choice-bg);
+  border: 1px solid var(--input-border);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--text-main);
+  cursor: wait;
+  animation: 2s ease-in-out infinite spatial-pulse;
+}
+
+.step-dot {
+  background-color: var(--text-dim);
+  border-radius: 9999px;
+  width: 6px;
+  height: 6px;
+  transition: all .4s cubic-bezier(.16, 1, .3, 1);
+}
+
+.step-dot.active {
+  background-color: #10b981;
+  width: 28px;
+  box-shadow: 0 0 12px #10b981;
+}
+
+.choice-card {
+  cursor: pointer;
+  text-align: left;
+  background-color: #020617;
+  border: 2px solid #1e293b;
+  border-radius: .75rem;
+  padding: 1rem 1.25rem;
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+}
+
+.choice-card:hover {
+  background-color: #1e293b4d;
+  border-color: #334155;
+}
+
+.choice-card.selected {
+  background-color: #10b9811a;
+  border-color: #10b981;
+  box-shadow: 0 0 12px #10b98126;
+}
+
+@keyframes gemini-aurora {
+  0% {
+    background-position: 0%;
+  }
+
+  50% {
+    background-position: 100%;
+  }
+
+  100% {
+    background-position: 0%;
+  }
+}
+
+.btn-gemini-loading {
+  color: #fff;
+  cursor: wait;
+  background: linear-gradient(-45deg, #10b981, #3b82f6, #8b5cf6, #14b8a6) 0 0 / 300% 300%;
+  border: 1px solid #fff3;
+  font-weight: 600;
+  animation: 2.5s infinite gemini-aurora;
+  box-shadow: 0 0 25px #3b82f666;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: 4s linear infinite spin-slow;
+}
+
+/*# sourceMappingURL=Desktop_Jimmy_Project_Vibe%20Hatch%20Code_app_globals_1c9_j74.css.map*/

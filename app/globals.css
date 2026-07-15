@@ -1,0 +1,335 @@
+/* ==========================================================================
+   1. TAILWIND CSS V4 CORE & SOURCE DIRECTIVES
+========================================================================== */
+@import "tailwindcss";
+
+/* 
+  Explicitly tell Tailwind v4 where to scan for utility classes. 
+  This prevents Next.js HMR caching bugs from dropping flex/grid layouts!
+*/
+@source "./app/**/*.{js,ts,jsx,tsx}";
+@source "./components/**/*.{js,ts,jsx,tsx}";
+
+
+/* ==========================================================================
+   2. NATIVE GOOGLE FONTS & TAILWIND THEME CONFIGURATION
+========================================================================== */
+/* 
+  In Tailwind v4, we use @theme to map CSS variables to native utility classes
+  instead of using !important hacks or a tailwind.config.js file.
+*/
+@theme {
+  --font-sans: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), "Courier New", monospace;
+}
+
+/* Apply base UI font to body natively */
+body {
+  font-family: var(--font-sans);
+}
+
+
+/* ==========================================================================
+   3. DUAL-THEME COLOR SYSTEM (DARK & LIGHT MODE VARIABLES)
+========================================================================== */
+/* Default Dark Mode (Obsidian Void) */
+:root {
+  --bg-main: #030305;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --glass-bg: rgba(18, 18, 24, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.08);
+  --input-focus: rgba(16, 185, 129, 0.4);
+  --choice-bg: rgba(255, 255, 255, 0.02);
+  --choice-hover: rgba(255, 255, 255, 0.06);
+  --code-bg: rgba(0, 0, 0, 0.45);
+  --orb-1: rgba(16, 185, 129, 0.15);
+  --orb-2: rgba(79, 70, 229, 0.12);
+}
+
+/* Light Mode Overrides (Opal Silver Glass - HIGH CONTRAST!) */
+.light-mode {
+  --bg-main: #f1f5f9 !important;
+  --text-main: #0f172a !important; /* Deep dark navy */
+  --text-muted: #334155 !important; /* Darker slate for sharp readability! */
+  --text-dim: #64748b !important;
+  --glass-bg: rgba(255, 255, 255, 0.85) !important;
+  --glass-border: rgba(255, 255, 255, 1) !important;
+  --glass-highlight: rgba(255, 255, 255, 1) !important;
+  --glass-shadow: rgba(148, 163, 184, 0.25) !important;
+  --input-bg: #ffffff !important;
+  --input-border: rgba(148, 163, 184, 0.4) !important; /* Crisper input borders! */
+  --input-focus: rgba(16, 185, 129, 0.6) !important;
+  --choice-bg: rgba(241, 245, 249, 0.8) !important;
+  --choice-hover: #ffffff !important;
+  --code-bg: #0f172a !important; /* Keep code box dark! */
+  --orb-1: rgba(16, 185, 129, 0.25) !important;
+  --orb-2: rgba(59, 130, 246, 0.2) !important;
+}
+
+
+/* ==========================================================================
+   4. BASE DOCUMENT & LAYOUT STYLES
+========================================================================== */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Force light mode background directly onto wrapper containers */
+.light-mode {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+
+/* ==========================================================================
+   5. TYPOGRAPHY & GRADIENT EFFECTS
+========================================================================== */
+/* Titanium / Frosted Chrome Title Gradient */
+.titanium-gradient {
+  background: linear-gradient(135deg, var(--text-main) 0%, #94a3b8 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* ==========================================================================
+   6. APPLE VISIONOS LIQUID GLASS COMPONENTS
+========================================================================== */
+/* Frosted Glass Panels */
+.liquid-glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    0 20px 40px var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-highlight);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Refractive Form Inputs */
+.liquid-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-main);
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.liquid-input:focus {
+  background: var(--choice-hover);
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+
+/* ==========================================================================
+   7. INTERACTIVE CHOICE CARDS & BUTTONS
+========================================================================== */
+/* Spatial Interactive Choice Pills */
+.liquid-choice {
+  background: var(--choice-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-choice:hover {
+  background: var(--choice-hover);
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+.liquid-choice.selected {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+/* Legacy Big Interactive Choice Cards */
+.choice-card {
+  background-color: #020617;
+  border: 2px solid #1e293b;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.choice-card:hover {
+  border-color: #334155;
+  background-color: rgba(30, 41, 59, 0.3);
+}
+
+.choice-card.selected {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+}
+
+/* ==========================================================================
+   Apple Segmented Control Tabs (Solid Monochrome White <-> Black)
+========================================================================== */
+
+/* 1. Dark Mode Default: Selected tab is Solid White with Black Words */
+.tab-active {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.2);
+}
+
+/* 2. Light Mode Override: Selected tab flips to Solid Black with White Words */
+.light-mode .tab-active {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 3. Unselected State: Clean transparent background with muted text */
+.tab-inactive {
+  background-color: transparent;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.tab-inactive:hover {
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   Apple Monochrome Solid Buttons (Zero Gradients!)
+========================================================================== */
+
+/* 1. Dark Mode Default: Solid White Button with Black Words */
+.liquid-btn-primary {
+  background: #ffffff !important; /* Pure solid white */
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.25);
+  color: #000000 !important; /* Black words */
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+/* 2. Light Mode Override: Solid Black Button with White Words */
+.light-mode .liquid-btn-primary {
+  background: #000000 !important; /* Pure solid black */
+  border-color: #334155 !important;
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.25) !important;
+  color: #ffffff !important; /* White words */
+}
+
+/* 3. Hover Actions (Only active when button is NOT disabled) */
+.liquid-btn-primary:not(:disabled):hover {
+  filter: brightness(0.9); /* Slightly dims the white on hover for a tactile click feel */
+  transform: scale(1.01);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35);
+}
+
+.light-mode .liquid-btn-primary:not(:disabled):hover {
+  filter: brightness(1.3) !important; /* Slightly lightens the black on hover */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* 4. SOLID DISABLED STATES (No transparency or muddy grey bugs!) */
+.liquid-btn-primary:disabled {
+  background: #27272a !important; /* Solid dark zinc grey */
+  border-color: #3f3f46 !important;
+  box-shadow: none !important;
+  color: #71717a !important; /* Solid muted grey words */
+  cursor: not-allowed;
+  transform: none !important;
+  filter: none !important;
+}
+
+.light-mode .liquid-btn-primary:disabled {
+  background: #e2e8f0 !important; /* Solid light slate grey */
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+  color: #94a3b8 !important; /* Solid readable grey words */
+}
+
+
+/* ==========================================================================
+   8. STEP INDICATORS & ANIMATED LOADING STATES
+========================================================================== */
+/* Multi-Step Capsule Dots */
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: var(--text-dim);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-dot.active {
+  background-color: #10b981;
+  box-shadow: 0 0 12px #10b981;
+  width: 28px;
+}
+
+/* Futuristic Spatial Pulse Animation */
+@keyframes spatial-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.99); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.liquid-btn-loading {
+  background: var(--choice-bg);
+  border: 1px solid var(--input-border);
+  backdrop-filter: blur(12px);
+  animation: spatial-pulse 2s ease-in-out infinite;
+  color: var(--text-main);
+  cursor: wait;
+}
+
+/* Moving Aurora Background Gradient (Gemini AI Style) */
+@keyframes gemini-aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-gemini-loading {
+  background: linear-gradient(-45deg, #10b981, #3b82f6, #8b5cf6, #14b8a6);
+  background-size: 300% 300%;
+  animation: gemini-aurora 2.5s ease infinite;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: wait;
+}
+
+/* Smooth Spinning AI Sparkle Star */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+} 
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
