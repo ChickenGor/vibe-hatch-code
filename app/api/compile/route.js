@@ -223,26 +223,32 @@ export async function POST(req) {
     // 3. Initialize the dynamic AI model
     const model = getModelInstance(provider, activeApiKey);
 
-    // 4. Configure the System Prompt (Now supercharged with the Environment Spec!)
-    const baseSystemRole = `You are an expert Spatial Software Architect and Principal Engineer.`;
-    const techEnforcement = `\n\nMANDATORY TARGET ARCHITECTURE SPECIFICATION:\nYou MUST strictly adhere to this framework ecosystem and data persistence topology:\n\n[EXECUTION ENVIRONMENT]\n${selectedEnvSpec}\n\n[DATA & PERSISTENCE TOPOLOGY]\n${selectedPersistenceSpec}\n`;
+    // 4. Configure the System Prompt to generate a prompt template
+    const baseSystemRole = `You are an expert Prompt Engineer and Senior Product Manager. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive Development Prompt Template.
+This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, ChatGPT, or v0) to build their application from scratch.`;
+
+    const techEnforcement = `\n\nTECHNICAL REFERENCE SPECIFICATIONS:\nUse these standard blueprints if the user chose or implied these technologies:\n\n[EXECUTION ENVIRONMENT]\n${selectedEnvSpec}\n\n[DATA & PERSISTENCE TOPOLOGY]\n${selectedPersistenceSpec}\n`;
     
     const systemInstruction = outputFormat === 'cursorrules'
-      ? `${baseSystemRole} Output a hyper-structured, fully complete software specification tailored perfectly as a .cursorrules configuration file for AI IDEs (Cursor, Windsurf, VS Code Copilot). Use clean markdown codeblocks. Do not write conversational introductions or filler text. Start directly with the technical specification.${techEnforcement}`
-      : `${baseSystemRole} Synthesize a comprehensive structural development blueprint spanning technical specifications, step-by-step implementation phases, and database layout architectures. Output only raw structured markdown without conversational filler text.${techEnforcement}`;
+      ? `${baseSystemRole} Synthesize a Development Prompt Template structured specifically for AI IDEs like Cursor/Windsurf (as a .cursorrules file or System Instruction). The output should enforce strict instructions, file directory layouts, system setup guidelines, and detailed build steps in raw markdown. Do not include conversational filler.${techEnforcement}`
+      : `${baseSystemRole} Synthesize a comprehensive Development Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the app. It must include sections for: Role/Persona, Project Context, Stack & Architecture, Feature Roadmap (Phase-by-Phase), Database/Persistence schema, UI/UX Guidelines, and Verification steps. Return only raw structured markdown without conversational filler.${techEnforcement}`;
     
-      // 5. Format Messages for the Vercel AI SDK
+    // 5. Format Messages for the Vercel AI SDK
     let messages = [];
 
     if (conversation && Array.isArray(conversation) && conversation.length > 0) {
-      // The Vercel AI SDK uses standard { role: 'user' | 'assistant', content: string }
       messages = conversation.map(msg => ({
-        role: msg.role === 'model' ? 'assistant' : msg.role,
+        role: msg.role === 'model' || msg.role === 'assistant' ? 'assistant' : 'user',
         content: msg.content
       }));
+      // Append a final system instructions nudge as a user message at the end
+      messages.push({
+        role: 'user',
+        content: `Based on our entire interview above, compile the final highly optimized ${outputFormat === 'cursorrules' ? '.cursorrules prompt configuration' : 'App Development Prompt Template'} now. Output only the prompt template itself, formatted in Markdown.`
+      });
     } else {
       const initialPrompt = `
-        SYNTHESIZE MASTER ARCHITECTURAL BLUEPRINT FOR:
+        COMPILE DEVELOPMENT PROMPT TEMPLATE FOR:
         - Project Identity: ${appName || 'Spatial App Concept'}
         - Target Execution Ecosystem: ${appType.toUpperCase()} (${selectedEnvSpec.split('\n')[1].trim()})
         - Target Tech Stack: ${techStack || 'Use standard best practices for this target environment'}
@@ -250,7 +256,6 @@ export async function POST(req) {
         - Aesthetic Direction: ${designVibe || 'Apple VisionOS Frosted Glass'}
         - Specific Requirements & Superpowers:
         ${features || 'Best-practice modern architecture'}
-        - Red Team Audit Enabled: ${enableRedTeam ? 'YES (Perform strict failure mode & scalability stress-test audit)' : 'NO'}
       `.trim();
 
       messages = [{ role: 'user', content: initialPrompt }];
