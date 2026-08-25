@@ -9,6 +9,52 @@ const STARTER_BLUEPRINTS = [
   { label: "🤖 PDF Chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
 ];
 
+const PROVIDER_MODELS = {
+  google: [
+    { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash' },
+    { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash' },
+    { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite' }
+  ],
+  anthropic: [
+    { id: 'claude-3-5-sonnet-latest', name: 'Claude 3.5 Sonnet' },
+    { id: 'claude-3-5-haiku-latest', name: 'Claude 3.5 Haiku' }
+  ],
+  openai: [
+    { id: 'gpt-4o', name: 'GPT-4o' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini' }
+  ],
+  groq: [
+    { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B' },
+    { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' }
+  ],
+  deepseek: [
+    { id: 'deepseek-chat', name: 'DeepSeek V3' },
+    { id: 'deepseek-reasoner', name: 'DeepSeek R1 (Reasoner)' }
+  ],
+  grok: [
+    { id: 'grok-2-latest', name: 'Grok 2' }
+  ],
+  kimi: [
+    { id: 'kimi-k2.5', name: 'Kimi K2.5' }
+  ],
+  mistral: [
+    { id: 'codestral-latest', name: 'Codestral' },
+    { id: 'mistral-large-latest', name: 'Mistral Large' }
+  ],
+  together: [
+    { id: 'Qwen/Qwen2.5-72B-Instruct-Turbo', name: 'Qwen 2.5 72B' },
+    { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', name: 'Llama 3.3 70B' }
+  ],
+  perplexity: [
+    { id: 'llama-3.1-sonar-large-128k-online', name: 'Sonar Large Online' }
+  ],
+  ollama: [
+    { id: 'qwen2.5-coder:32b', name: 'Qwen 2.5 Coder 32b' },
+    { id: 'llama3.2', name: 'Llama 3.2' }
+  ]
+};
+
+
 export default function VibeHatchWizard() {
   // Theme state
   const [theme, setTheme] = useState('dark');
@@ -26,6 +72,7 @@ export default function VibeHatchWizard() {
 
   // Settings & Rate Limiting states
   const [provider, setProvider] = useState('google');
+  const [modelId, setModelId] = useState('gemini-3.6-flash');
   const [customKeys, setCustomKeys] = useState({});
   const [tempKeyInput, setTempKeyInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -78,8 +125,17 @@ export default function VibeHatchWizard() {
     }
 
     setCustomKeys(loadedKeys);
-    if (loadedKeys.google) {
-      setTempKeyInput(loadedKeys.google);
+    
+    const savedProvider = localStorage.getItem('vibe_hatch_provider') || 'google';
+    setProvider(savedProvider);
+    
+    const savedModelId = localStorage.getItem('vibe_hatch_model_id') || 'gemini-3.6-flash';
+    setModelId(savedModelId);
+
+    if (loadedKeys[savedProvider]) {
+      setTempKeyInput(loadedKeys[savedProvider]);
+    } else {
+      setTempKeyInput('');
     }
 
     const savedTheme = localStorage.getItem('vibe_hatch_theme') || 'dark';
@@ -127,6 +183,9 @@ export default function VibeHatchWizard() {
       localStorage.setItem(`vibe_hatch_key_${provider}`, trimmedInput);
     }
 
+    localStorage.setItem('vibe_hatch_provider', provider);
+    localStorage.setItem('vibe_hatch_model_id', modelId);
+
     setCustomKeys(updatedKeys);
     setIsModalOpen(false);
   };
@@ -166,6 +225,7 @@ export default function VibeHatchWizard() {
         body: JSON.stringify({
           conversation: updatedConversation,
           provider,
+          modelId,
           customApiKey: customKeys[provider] || null
         })
       });
@@ -204,6 +264,7 @@ export default function VibeHatchWizard() {
           conversation,
           outputFormat,
           provider,
+          modelId,
           customApiKey: customKeys[provider] || null
         })
       });
@@ -255,6 +316,7 @@ export default function VibeHatchWizard() {
           conversation: updatedConversation,
           outputFormat,
           provider,
+          modelId,
           customApiKey: customKeys[provider] || null
         })
       });
@@ -282,20 +344,14 @@ export default function VibeHatchWizard() {
   };
 
   const getActiveModelLabel = () => {
-    const modelLabels = {
-      google: "Gemini 3.6 Flash",
-      anthropic: "Claude 3.5 Sonnet",
-      openai: "GPT-4o",
-      groq: "Llama 3.3 (Groq)",
-      deepseek: "DeepSeek Chat",
-      grok: "Grok 2 (xAI)",
-      kimi: "Kimi k2.5",
-      mistral: "Codestral (Mistral)",
-      together: "Qwen 2.5 (Together)",
-      perplexity: "Sonar (Perplexity)",
-      ollama: "Ollama (Local)"
-    };
-    return modelLabels[provider] || "AI Assistant";
+    const list = PROVIDER_MODELS[provider] || [];
+    const match = list.find(m => m.id === modelId);
+    if (match) return match.name;
+    for (const key in PROVIDER_MODELS) {
+      const found = PROVIDER_MODELS[key].find(m => m.id === modelId);
+      if (found) return found.name;
+    }
+    return modelId;
   };
 
   const getApiKeyLink = () => {
@@ -801,6 +857,10 @@ export default function VibeHatchWizard() {
                   onClick={() => {
                     setProvider(prov.id);
                     setTempKeyInput(customKeys[prov.id] || '');
+                    const models = PROVIDER_MODELS[prov.id] || [];
+                    if (models.length > 0) {
+                      setModelId(models[0].id);
+                    }
                   }}
                   className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1 ${
                     provider === prov.id 
@@ -811,6 +871,25 @@ export default function VibeHatchWizard() {
                   {prov.name}
                 </button>
               ))}
+            </div>
+
+            {/* Model Selector Dropdown */}
+            <div className="space-y-1.5 mb-4 text-left">
+              <label className="block text-[11px] font-mono uppercase tracking-wider font-semibold">
+                Select Model:
+              </label>
+              <select
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                className="liquid-input text-xs font-mono w-full cursor-pointer py-2 px-3 rounded-lg border focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+              >
+                {(PROVIDER_MODELS[provider] || []).map((m) => (
+                  <option key={m.id} value={m.id} className="bg-zinc-900 text-white dark:bg-zinc-900">
+                    {m.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <form onSubmit={handleSaveKey} className="space-y-4">

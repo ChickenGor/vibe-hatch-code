@@ -10,27 +10,27 @@ import { createMistral } from '@ai-sdk/mistral';
 import { togetherai } from '@ai-sdk/togetherai';
 import { createMoonshotAI } from '@ai-sdk/moonshotai';
 
-function getModelInstance(provider, apiKey) {
+function getModelInstance(provider, apiKey, modelId) {
   switch (provider) {
     case 'deepseek':
       const deepseek = createDeepSeek({ apiKey });
-      return deepseek('deepseek-chat'); // Token efficient and fast for chat
+      return deepseek(modelId || 'deepseek-chat'); // Token efficient and fast for chat
 
     case 'grok':
       const xai = createXai({ apiKey });
-      return xai('grok-2-latest');
+      return xai(modelId || 'grok-2-latest');
 
     case 'kimi':
       const moonshot = createMoonshotAI({ apiKey });
-      return moonshot('kimi-k2.5');
+      return moonshot(modelId || 'kimi-k2.5');
 
     case 'groq':
       const groq = createGroq({ apiKey });
-      return groq('llama-3.3-70b-versatile');
+      return groq(modelId || 'llama-3.3-70b-versatile');
 
     case 'mistral':
       const mistral = createMistral({ apiKey });
-      return mistral('codestral-latest');
+      return mistral(modelId || 'codestral-latest');
 
     case 'perplexity':
       const perplexity = createOpenAI({
@@ -38,11 +38,11 @@ function getModelInstance(provider, apiKey) {
         baseURL: 'https://api.perplexity.ai',
         apiKey
       });
-      return perplexity('llama-3.1-sonar-large-128k-online');
+      return perplexity(modelId || 'llama-3.1-sonar-large-128k-online');
 
     case 'together':
       const together = togetherai({ apiKey });
-      return together('Qwen/Qwen2.5-72B-Instruct-Turbo');
+      return together(modelId || 'Qwen/Qwen2.5-72B-Instruct-Turbo');
 
     case 'ollama':
       const ollama = createOpenAI({
@@ -50,20 +50,20 @@ function getModelInstance(provider, apiKey) {
         baseURL: 'http://localhost:11434/v1',
         apiKey: 'ollama'
       });
-      return ollama('qwen2.5-coder:32b');
+      return ollama(modelId || 'qwen2.5-coder:32b');
 
     case 'anthropic':
       const anthropic = createAnthropic({ apiKey });
-      return anthropic('claude-3-5-sonnet-latest');
+      return anthropic(modelId || 'claude-3-5-sonnet-latest');
 
     case 'openai':
       const openai = createOpenAI({ apiKey });
-      return openai('gpt-4o-mini'); // Token efficient / fast for chat!
+      return openai(modelId || 'gpt-4o-mini'); // Token efficient / fast for chat!
 
     case 'google':
     default:
       const google = createGoogleGenerativeAI({ apiKey });
-      return google('gemini-3.6-flash'); // Highly efficient for chat
+      return google(modelId || 'gemini-3.6-flash'); // Highly efficient for chat
   }
 }
 
@@ -74,7 +74,8 @@ export async function POST(req) {
       conversation = [],
       customApiKey,
       userApiKey,
-      provider = 'google'
+      provider = 'google',
+      modelId
     } = body;
 
     // Resolve API key
@@ -101,7 +102,7 @@ export async function POST(req) {
       }, { status: 401 });
     }
 
-    const model = getModelInstance(provider, activeApiKey);
+    const model = getModelInstance(provider, activeApiKey, modelId);
 
     const systemInstruction = `You are the Vibe Hatch Chatbot, a friendly requirements-gathering PM and prompt engineer.
 Your goal is to interview the user and collect details to generate a developer prompt template for their app.

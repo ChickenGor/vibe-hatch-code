@@ -11,29 +11,29 @@ import { togetherai } from '@ai-sdk/togetherai';
 import { createMoonshotAI } from '@ai-sdk/moonshotai';
 
 // Helper function to dynamically initialize the chosen AI provider
-function getModelInstance(provider, apiKey) {
+function getModelInstance(provider, apiKey, modelId) {
   switch (provider) {
 
 
     case 'deepseek':
       const deepseek = createDeepSeek({ apiKey });
-      return deepseek('deepseek-reasoner'); // Their god-tier coding & reasoning model!
+      return deepseek(modelId || 'deepseek-reasoner'); // Their god-tier coding & reasoning model!
 
     case 'grok':
       const xai = createXai({ apiKey });
-      return xai('grok-2-latest');
+      return xai(modelId || 'grok-2-latest');
 
     case 'kimi':
       const moonshot = createMoonshotAI({ apiKey });
-      return moonshot('kimi-k2.5'); // Or 'moonshot-v1-128k'
+      return moonshot(modelId || 'kimi-k2.5'); // Or 'moonshot-v1-128k'
 
     case 'groq':
       const groq = createGroq({ apiKey });
-      return groq('llama-3.3-70b-versatile'); // Blazing 500+ tokens/sec speed!
+      return groq(modelId || 'llama-3.3-70b-versatile'); // Blazing 500+ tokens/sec speed!
 
     case 'mistral':
       const mistral = createMistral({ apiKey });
-      return mistral('codestral-latest'); // 80+ programming languages!
+      return mistral(modelId || 'codestral-latest'); // 80+ programming languages!
 
     case 'perplexity':
       const perplexity = createOpenAI({
@@ -41,20 +41,20 @@ function getModelInstance(provider, apiKey) {
         baseURL: 'https://api.perplexity.ai',
         apiKey
       });
-      return perplexity('llama-3.1-sonar-large-128k-online'); // Live web browsing!
+      return perplexity(modelId || 'llama-3.1-sonar-large-128k-online'); // Live web browsing!
 
     case 'together':
       const together = createTogetherAI({ apiKey });
-      return together('Qwen/Qwen2.5-72B-Instruct-Turbo'); // Top open-source coding benchmark winner
+      return together(modelId || 'Qwen/Qwen2.5-72B-Instruct-Turbo'); // Top open-source coding benchmark winner
 
     case 'ollama':
       // 100% Free, Offline, and Local! (No API key needed)
       const ollama = createOpenAI({
         name: 'ollama',
-        baseURL: customBaseUrl || 'http://localhost:11434/v1',
+        baseURL: 'http://localhost:11434/v1',
         apiKey: 'ollama' // Ollama doesn't need a real key, just a dummy string
       });
-      return ollama('qwen2.5-coder:32b')
+      return ollama(modelId || 'qwen2.5-coder:32b')
 
     //=======================================
     //  EXISTING BIG 3 
@@ -62,16 +62,16 @@ function getModelInstance(provider, apiKey) {
 
     case 'anthropic':
       const anthropic = createAnthropic({ apiKey });
-      return anthropic('claude-3-5-sonnet-latest');
+      return anthropic(modelId || 'claude-3-5-sonnet-latest');
 
     case 'openai':
       const openai = createOpenAI({ apiKey });
-      return openai('gpt-4o');
+      return openai(modelId || 'gpt-4o');
 
     case 'google':
     default:
       const google = createGoogleGenerativeAI({ apiKey });
-      return google('gemini-3.6-flash');
+      return google(modelId || 'gemini-3.6-flash');
   }
 }
 
@@ -182,7 +182,8 @@ export async function POST(req) {
       outputFormat,
       enableRedTeam,
       appType = 'web' ,
-      dataRequirement = 'cloud'
+      dataRequirement = 'cloud',
+      modelId
     } = body;
 
     // 1. Resolve the API Key (BYOK overrides server environment variables)
@@ -221,7 +222,7 @@ export async function POST(req) {
     const selectedPersistenceSpec = PERSISTENCE_SPECS[dataRequirement] || PERSISTENCE_SPECS.cloud; 
 
     // 3. Initialize the dynamic AI model
-    const model = getModelInstance(provider, activeApiKey);
+    const model = getModelInstance(provider, activeApiKey, modelId);
 
     // 4. Configure the System Prompt to generate a prompt template
     const baseSystemRole = `You are an expert Prompt Engineer and Senior Product Manager. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive Development Prompt Template.
