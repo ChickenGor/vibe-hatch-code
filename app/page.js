@@ -143,6 +143,7 @@ const TECH_OPTIONS = [
 export default function VibeHatchWizard() {
   // Theme state
   const [theme, setTheme] = useState('dark');
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
 
   // Conversational chatbot states
   const [conversation, setConversation] = useState([
@@ -539,7 +540,7 @@ export default function VibeHatchWizard() {
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
-        colors: theme === 'dark' ? ['#ffffff', '#10b981', '#64748b'] : ['#0f172a', '#10b981', '#3b82f6']
+        colors: theme === 'dark' ? ['#ffffff', '#afea93', '#64748b'] : ['#0f172a', '#afea93', '#3b82f6']
       });
     } catch (err) {
       setErrorMessage(err.message);
@@ -724,7 +725,7 @@ export default function VibeHatchWizard() {
 
           {/* Navigation Menu */}
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #10b981' }}>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #afea93' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Chat Assistant</span>
             </button>
@@ -855,14 +856,30 @@ export default function VibeHatchWizard() {
           </button>
         )}
         
-        {/* Warning banner centered at top */}
+        {/* Warning banner, tabs and controls wrapper */}
         <div className="pt-4 px-4 flex flex-col items-center gap-3 shrink-0">
-          <div className={`bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0 ${
-            theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'
-          }`}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-            <span className="truncate">Vibe Hatch AI can make mistakes. Verify important prompt outputs.</span>
-          </div>
+          {/* Warning banner centered at top */}
+          {isBannerVisible && (
+            <div className={`px-4 py-1 rounded-full text-[10px] font-sans flex items-center justify-between gap-3 shadow-sm max-w-lg shrink-0 border select-none transition-all ${
+              theme === 'dark' 
+                ? 'bg-[#afea93] text-black border-transparent font-medium shadow-emerald-500/5' 
+                : 'bg-[#e2f4da] text-[#1f2d1a] border-[#afea93]/40 font-medium'
+            }`}>
+              <div className="flex items-center gap-1.5 py-0.5">
+                <span className="text-[12px] font-bold">ⓘ</span>
+                <span className="truncate">Vibe Hatch AI can make mistakes. Check important info.</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] ${theme === 'dark' ? 'text-black/35' : 'text-[#1f2d1a]/30'}`}>|</span>
+                <button 
+                  onClick={() => setIsBannerVisible(false)}
+                  className="hover:scale-110 active:scale-95 transition cursor-pointer text-[10px] p-0.5"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Dynamic Intent Selector Tabs */}
           <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px] shadow-sm max-w-md w-full justify-between" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
