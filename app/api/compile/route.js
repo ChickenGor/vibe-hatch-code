@@ -170,6 +170,9 @@ export async function POST(req) {
     const body = await req.json();
 
     const {
+      promptMode = 'new_project',
+      promptDetail = 'balanced',
+      agentType = 'generic',
       conversation,
       appName,
       features,
@@ -262,31 +265,208 @@ export async function POST(req) {
 3. Performance Benchmarks: List memory usage patterns, caching strategies, and database indexing recommendations to keep operations optimized.`
       : '';
 
+    let agentTargetInstruction = '';
+    if (agentType === 'codex') {
+      agentTargetInstruction = '\n- Target Engine: OpenAI Codex. Format instructions to use straightforward patterns and clean, standard API invocations.';
+    } else if (agentType === 'gemini') {
+      agentTargetInstruction = '\n- Target Engine: Gemini Code Assist / Vertex AI. Focus on clear architectural descriptions, explicit types, and clean file separation.';
+    } else if (agentType === 'claude_code') {
+      agentTargetInstruction = '\n- Target Engine: Claude Code (CLI agent). Structure output for command execution, minimal conversational steps, and precise file patches.';
+    } else if (agentType === 'cursor') {
+      agentTargetInstruction = '\n- Target Engine: Cursor AI Composer. Focus on listing exactly files likely affected, clear directory structure mappings, and precise component edits.';
+    } else if (agentType === 'windsurf') {
+      agentTargetInstruction = '\n- Target Engine: Windsurf Cascade. Emphasize multi-file command executions, tool calling validations, and precise file tag hierarchies.';
+    } else {
+      agentTargetInstruction = '\n- Target Engine: Generic AI Coding Agent. Maintain high portability, strict execution rules, and standard markdown specifications.';
+    }
+
+    let modeExecutionRules = '';
+    if (promptMode === 'new_project') {
+      modeExecutionRules = `
+## Agent Execution Rules (New Project Scaffolding)
+1. Scaffold the initial repository layout. Establish clean configuration files and project defaults.
+2. Focus strictly on Phase 1: Foundation & Scaffolding.
+3. Establish robust file paths using the folder blueprints.
+4. Do not write placeholder features or mock files unless requested.
+5. Create components and files only when they provide direct value. Avoid empty files.
+      `.trim();
+    } else if (promptMode === 'existing_project') {
+      modeExecutionRules = `
+## Agent Execution Rules (Existing Repository Integration)
+1. Inspect the existing repository structure and files before writing code.
+2. Understand the active architecture and dependencies first.
+3. Search for existing components, services, models, and helper functions before creating new ones.
+4. Reuse existing implementations and state mechanisms whenever possible.
+5. Do not refactor unrelated working systems or files.
+6. Preserve existing behavior and constraints unless explicitly requested.
+7. Make the smallest clean set of changes required.
+      `.trim();
+    } else if (promptMode === 'feature') {
+      modeExecutionRules = `
+## Agent Execution Rules (Feature Addition)
+1. Inspect files that are likely to be affected by this feature.
+2. Build within the established architectural layers.
+3. Do not modify or refactor unrelated files.
+4. Pave clear dependencies and avoid creating duplicate logic or helper utilities.
+5. Focus strictly on the CURRENT TASK and treat future roadmap items as OUT OF SCOPE.
+      `.trim();
+    } else if (promptMode === 'bug_fix') {
+      modeExecutionRules = `
+## Agent Execution Rules (Troubleshooting & Patching)
+1. Reproduce the bug or error log first.
+2. Inspect the suspected files to identify the root cause.
+3. Apply a targeted, surgical patch to fix the error.
+4. Do not touch or modify styles, designs, or unrelated components.
+5. Perform regression checks to verify that the fix does not break existing features.
+      `.trim();
+    } else if (promptMode === 'ui_improvement') {
+      modeExecutionRules = `
+## Agent Execution Rules (UI/UX Polish)
+1. Polish spacing, layouts, design tokens, and colors without changing core business logic.
+2. Reuse the existing design system or Tailwind theme definitions.
+3. Verify responsive layout behavior on mobile and desktop viewports.
+4. Ensure text contrast and tags satisfy accessibility standards.
+      `.trim();
+    } else if (promptMode === 'refactor') {
+      modeExecutionRules = `
+## Agent Execution Rules (Refactoring)
+1. Refactor defined boundaries to improve code readability, performance, or typing.
+2. Do not introduce new features or change application behavior.
+3. Add regression testing to verify behavior is preserved.
+      `.trim();
+    }
+
+    let detailLevelInstruction = '';
+    if (promptDetail === 'compact') {
+      detailLevelInstruction = `
+COMPACT DETAIL LEVEL DIRECTIVES:
+You MUST output an extremely token-efficient, concise prompt. Omit verbose explanations, detailed roadmap lists, and complex schemas.
+Structure the prompt with ONLY these sections, keeping them brief:
+1. Role & Persona
+2. Project Context
+3. Current Task (Phase 1 / Immediate goal)
+4. Tech Stack & Environment
+5. Agent Execution Rules & Constraints
+6. Acceptance Criteria
+7. Executable Verification Commands
+      `.trim();
+    } else if (promptDetail === 'balanced') {
+      detailLevelInstruction = `
+BALANCED DETAIL LEVEL DIRECTIVES:
+Output the recommended standard developer prompt format. Emphasize task boundaries and token efficiency.
+Structure the prompt in exactly this order:
+1. Role & Persona
+2. Project Context
+3. Current Task (Clearly highlight what to implement now. Keep near the top!)
+4. Tech Stack
+5. Architecture (Folder tree layout appropriate to framework. Do not force empty folder scaffolding rules: specify "Do not create empty files merely to satisfy the schema.")
+6. Relevant Data Model (Relational reasoning, one-to-many paths, nested schemas)
+7. UI/UX Requirements
+8. Agent Execution Rules
+9. Constraints / Out of Scope (Explicitly lists future phases here under Out of Scope: "Do not implement yet: ...")
+10. Security Requirements (Firebase security rule structures checking resource vs request.resource data)
+11. Acceptance Criteria & Completion Criteria
+12. Verification (Generate stack-appropriate executable verification commands)
+13. Final Response Format
+14. Future Roadmap (Include roadmap warning: "Future roadmap items should influence architecture decisions but must not be implemented until their phase is explicitly requested.")
+      `.trim();
+    } else if (promptDetail === 'detailed') {
+      detailLevelInstruction = `
+DETAILED DETAIL LEVEL DIRECTIVES:
+Output a fully comprehensive, exhaustive engineering blueprint.
+Structure the prompt in exactly this order:
+1. Role & Persona
+2. Project Context
+3. Current Task (Phase 1/Immediate goal)
+4. Tech Stack & Compatibility Scan (check package and version matching)
+5. Comprehensive Architecture (Complete directory structure)
+6. Exhaustive Database Schema (Full fields, types, relationships, query models)
+7. UI/UX Style Guides & Layout Tree
+8. Agent Execution Rules
+9. Detailed Constraints & Out of Scope
+10. Strict Security Requirements (Deep Firestore rule mappings or RLS rules)
+11. Exhaustive Acceptance Criteria & Edge Cases
+12. Executable Verification Commands (unit, lint, compile checks)
+13. Final Response Contract
+14. Exhaustive Future Roadmap (All future phases in detail, with instructions not to implement ahead of schedule)
+15. Red Team Threat Modeling & Mitigation (Scan for leaks, memory issues, race conditions)
+      `.trim();
+    }
+
+    const coreAIGenerationRules = `
+CRITICAL COMPILATION ENGINE REQUIREMENTS:
+- CURRENT TASK vs ROADMAP: Clearly divide the prompt. The "Current Task" section must reside near the top of the prompt. All future features must be grouped in "Out of Scope" with explicit rules: "Do NOT implement yet: ...". Include the roadmap notice: "Future roadmap items should influence architecture decisions but must not be implemented until their phase is explicitly requested."
+- ARCHITECTURE CONSISTENCY: Ensure the generated folder structure and technology blueprints are compatible with the requested setup (e.g. if Clean Architecture + BLoC is used in Flutter, generate features/auth/data, features/auth/domain, features/auth/presentation directories. For Next.js, use app router schemas). Emphasize: "Do not create empty architectural files merely to satisfy the folder structure. Create components only when they provide actual value." Validate compatible libraries.
+- DATABASE SCHEMAS & RELATIONSHIPS: Reason about data relationships (one-to-many, nested data, ownership bounds, security scopes) instead of flat collections. (For example, an Exercise Set nested inside an Exercise, which is nested inside a Workout session).
+- FIREBASE SECURITY RULES: If Firebase is in the stack, generate precise Firestore rules differentiating between comparison variables: 'resource.data' (for existing database values in read/update/delete rules) and 'request.resource.data' (for incoming values in create/update rules), validating author ownership.
+- DO NOT CONSTRAINTS: Add a clear "Do NOT" constraints section:
+  - Do NOT rewrite unrelated working code.
+  - Do NOT change architecture style without justification.
+  - Do NOT add dependencies or packages unnecessarily.
+  - Do NOT duplicate existing components or files.
+  - Do NOT hardcode secrets, keys, or credentials.
+  - Do NOT implement future phases.
+  - Do NOT replace working libraries without reason.
+  - Do NOT generate placeholder code.
+  - Do NOT create unnecessary abstraction layers.
+  - Do NOT claim validation passed unless commands were actually executed.
+- TOKEN EFFICIENCY RULES: Add token efficiency rules for the building agent:
+  - Inspect relevant files first instead of reading the entire repository.
+  - Search for existing implementations before opening many files.
+  - Avoid repeatedly reading unchanged files.
+  - Prefer targeted patches over full-file rewrites.
+  - Do not repeat the project specification in the response.
+  - Do not explain every line of code.
+  - Keep the completion summary concise.
+- STACK-SPECIFIC VERIFICATION: Generate executable test and verification commands matching ONLY the selected technologies:
+  - If Flutter: "dart format . && flutter analyze && flutter test"
+  - If React/Next.js/Node: "npm run lint && npm run build && npm test"
+  - If Python: "pytest && ruff check"
+  - For others: include standard stack linting/testing commands.
+  - Require the agent: "Do not claim a command passed unless it was actually executed. If the environment prevents execution, report that clearly."
+- COMPLETION CRITERIA: Generate explicit completion criteria mapping registration, login, data flows, and error handling as relevant.
+- FINAL RESPONSE CONTRACT: The compiled prompt must demand a concise response format:
+  "After implementation, report only:
+  Implemented:
+  - ...
+  Files created:
+  - ...
+  Files modified:
+  - ...
+  Verification:
+  - ...
+  Manual actions required:
+  - ..."
+  Do not ask the agent to output the entire source code of unchanged files.
+    `.trim();
+
     let systemInstruction = '';
     let compilePromptLabel = '';
+
+    const combinedRules = `\n\n${agentTargetInstruction}\n${modeExecutionRules}\n${detailLevelInstruction}\n${coreAIGenerationRules}\n\n${techEnforcement}${fileTreeRule}${redTeamRule}`;
 
     if (intentMode === 'add_feature') {
       compilePromptLabel = 'Code Modification Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Senior Codebase Architect. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive Feature Addition & Code Modification Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or Windsurf) to implement a new feature or change inside an existing codebase.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Code Modification Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the requested feature changes. It must include sections for: Target Feature Specification, Existing Code Context, File Directory Diffs (which files to create, modify, or delete), Implementation Steps (state changes, utility updates, API routing integrations), Regression Concerns, and Automated/Manual Verification Steps. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Code Modification Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the requested feature changes. It must include sections for: Target Feature Specification, Existing Code Context, File Directory Diffs (which files to create, modify, or delete), Implementation Steps (state changes, utility updates, API routing integrations), Regression Concerns, and Automated/Manual Verification Steps. Return only raw structured markdown without conversational filler.${combinedRules}`;
     } else if (intentMode === 'solve_problem') {
       compilePromptLabel = 'Bug Fix & Troubleshooting Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Principal Debugging Engineer. Your task is to analyze the user troubleshooting logs and compile a highly structured, comprehensive Bug Fix & Troubleshooting Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or ChatGPT) to debug and patch a specific issue or error trace.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Troubleshooting Prompt Template (formatted in markdown). The prompt should guide a debugging AI step-by-step to find the root cause and patch the error. It must include sections for: Defect Summary & Stack Trace, Code Context & Suspected Files, Step-by-Step Diagnostic Plan, Surgical Patch Placement Instructions, Safety & Performance Checks (to prevent side-effects), and Regression/Unit Testing Verification. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Troubleshooting Prompt Template (formatted in markdown). The prompt should guide a debugging AI step-by-step to find the root cause and patch the error. It must include sections for: Defect Summary & Stack Trace, Code Context & Suspected Files, Step-by-Step Diagnostic Plan, Surgical Patch Placement Instructions, Safety & Performance Checks (to prevent side-effects), and Regression/Unit Testing Verification. Return only raw structured markdown without conversational filler.${combinedRules}`;
     } else if (intentMode === 'refactor_redesign') {
       compilePromptLabel = 'UI Redesign & Refactoring Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Principal Frontend Designer. Your task is to analyze the styling & refactoring logs and compile a highly structured, comprehensive UI Redesign & Refactoring Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or v0) to redesign the user interface, convert styling layers, or refactor layout structures.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Refactoring & Design Prompt Template (formatted in markdown). The prompt should guide a styling AI step-by-step to overhaul the UI or clean up components. It must include sections for: Refactoring Goals, Design Theme Tokens (Opal Light vs Obsidian Void color variables), Component Restructuring Plan, CSS Migration Rules (e.g. converting modules to Tailwind), Responsive Layout Checklists, Accessibility Compliance, and Side-by-Side Visual Verification Checks. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Refactoring & Design Prompt Template (formatted in markdown). The prompt should guide a styling AI step-by-step to overhaul the UI or clean up components. It must include sections for: Refactoring Goals, Design Theme Tokens (Opal Light vs Obsidian Void color variables), Component Restructuring Plan, CSS Migration Rules (e.g. converting modules to Tailwind), Responsive Layout Checklists, Accessibility Compliance, and Side-by-Side Visual Verification Checks. Return only raw structured markdown without conversational filler.${combinedRules}`;
     } else {
       compilePromptLabel = outputFormat === 'cursorrules' ? '.cursorrules prompt configuration' : 'App Development Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Senior Product Manager. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive App Development Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, ChatGPT, or v0) to build their application from scratch.`;
       systemInstruction = outputFormat === 'cursorrules'
-        ? `${baseSystemRole} Synthesize a Development Prompt Template structured specifically for AI IDEs like Cursor/Windsurf (as a .cursorrules file or System Instruction). The output should enforce strict instructions, file directory layouts, system setup guidelines, and detailed build steps in raw markdown. Do not include conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`
-        : `${baseSystemRole} Synthesize a comprehensive Development Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the app. It must include sections for: Role/Persona, Project Context, Stack & Architecture, Feature Roadmap (Phase-by-Phase), Database/Persistence schema, UI/UX Guidelines, and Verification steps. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
+        ? `${baseSystemRole} Synthesize a Development Prompt Template structured specifically for AI IDEs like Cursor/Windsurf (as a .cursorrules file or System Instruction). The output should enforce strict instructions, file directory layouts, system setup guidelines, and detailed build steps in raw markdown. Do not include conversational filler.${combinedRules}`
+        : `${baseSystemRole} Synthesize a comprehensive Development Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the app. It must include sections for: Role/Persona, Project Context, Stack & Architecture, Feature Roadmap (Phase-by-Phase), Database/Persistence schema, UI/UX Guidelines, and Verification steps. Return only raw structured markdown without conversational filler.${combinedRules}`;
     }
 
     // 5. Format Messages for the Vercel AI SDK

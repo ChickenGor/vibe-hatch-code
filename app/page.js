@@ -361,6 +361,109 @@ const TECH_OPTIONS = [
 ];
 
 
+const analyzePromptQuality = (promptText, mode, detail, agent, stack, dbRequirement) => {
+  if (!promptText) return null;
+  
+  const hasRules = promptText.toLowerCase().includes('execution rules') || promptText.toLowerCase().includes('agent execution');
+  const hasScope = promptText.toLowerCase().includes('current task') || promptText.toLowerCase().includes('out of scope');
+  const hasDb = promptText.toLowerCase().includes('database') || promptText.toLowerCase().includes('schema') || promptText.toLowerCase().includes('relation');
+  const hasSecurity = promptText.toLowerCase().includes('security') || promptText.toLowerCase().includes('rule') || promptText.toLowerCase().includes('rls');
+  const hasVerification = promptText.toLowerCase().includes('verification') || promptText.toLowerCase().includes('test') || promptText.toLowerCase().includes('npm') || promptText.toLowerCase().includes('flutter');
+
+  const grades = {
+    architecture: detail === 'compact' ? 'Good' : 'Excellent',
+    scope: hasScope && hasRules ? 'Excellent' : hasScope ? 'Good' : 'Fair',
+    database: dbRequirement === 'none' ? 'Not Applicable' : (hasDb ? 'Excellent' : 'Fair'),
+    security: dbRequirement === 'none' ? 'Not Applicable' : (hasSecurity ? 'Excellent' : 'Fair'),
+    token: detail === 'compact' ? 'Excellent' : detail === 'balanced' ? 'Good' : 'Fair',
+    verification: hasVerification ? 'Excellent' : 'Fair',
+  };
+
+  const words = promptText.split(/\s+/).length;
+  const tokens = Math.round(words * 1.3);
+
+  let recommendation = '';
+  if (mode === 'new_project') {
+    recommendation = 'Recommended for: Initial project setup scaffolding.';
+  } else if (mode === 'existing_project') {
+    recommendation = 'Recommended for: Continuing development on existing repos.';
+  } else if (mode === 'feature') {
+    recommendation = 'Recommended for: Adding single isolated codebase features.';
+  } else if (mode === 'bug_fix') {
+    recommendation = 'Recommended for: Debugging error logs and targeted patching.';
+  } else if (mode === 'ui_improvement') {
+    recommendation = 'Recommended for: Restyling layout and accessibility tuneups.';
+  } else {
+    recommendation = 'Recommended for: Refactoring code blocks and folder restructuring.';
+  }
+
+  return {
+    grades,
+    tokenEstimate: tokens,
+    recommendation
+  };
+};
+
+const getFollowUpPrompts = (mode, appName, selectedStack) => {
+  const stackLabel = selectedStack && selectedStack.length > 0 ? selectedStack.join(' and ') : 'the established stack';
+  
+  return [
+    {
+      title: '⏭️ Next Phase / Continue Prompt',
+      prompt: `Continue to the next implementation phase of ${appName || 'our project'} using the established specification.
+
+1. Inspect the existing repository and files first to align with the current implementation progress.
+2. Implement the next sequential features described in the roadmap.
+3. Reuse existing layout files, components, and schema integrations.
+4. Do not start implementing future roadmap phases ahead of schedule.
+5. Verify functionality by running appropriate test commands.
+6. Keep the final response short, listing only implemented files and changes.`
+    },
+    {
+      title: '➕ Feature Addition Prompt',
+      prompt: `I want to add a new feature to the existing codebase of ${appName || 'our app'}.
+
+Target Feature Description:
+[Describe your feature here]
+
+Execution Rules:
+1. Identify and inspect files that are likely to be affected by this feature.
+2. Follow the existing architectural patterns (${stackLabel}) and styling conventions.
+3. Re-use existing utility functions or UI components instead of duplicating them.
+4. Avoid any refactoring of unrelated working systems.
+5. Provide a minimal clean set of files added or modified.`
+    },
+    {
+      title: '🐞 Bug Fix / Troubleshooting Prompt',
+      prompt: `I encountered an issue/error in ${appName || 'our app'}.
+
+Stack trace / Bug behavior:
+[Paste error log or description here]
+
+Steps to fix:
+1. Locate the file and code lines where the error is triggered.
+2. Perform a diagnostic review to find the root cause.
+3. Apply a targeted, surgical patch to fix the error.
+4. Do not perform any style adjustments or write unrelated modifications.
+5. Run checks to verify the fix works and does not introduce regressions.`
+    },
+    {
+      title: '🎨 UI & Style Polish Prompt',
+      prompt: `Polish the UI style or styling tokens of [specify component or route].
+
+Redesign Target:
+[Specify style changes, design variables, or dark/light modifications]
+
+Constraints:
+1. Target only visual styling, spacing, and CSS/Tailwind classes.
+2. Do not modify backend API endpoints, database schemas, or routing logic.
+3. Ensure the responsive behavior holds on mobile/tablet viewports.
+4. Verify accessibility contrast meets proper standards.`
+    }
+  ];
+};
+
+
 export default function VibeHatchWizard() {
   // Theme state
   const [theme, setTheme] = useState('dark');
@@ -391,6 +494,9 @@ export default function VibeHatchWizard() {
   const [errorMessage, setErrorMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [outputFormat, setOutputFormat] = useState('standard');
+  const [promptMode, setPromptMode] = useState('new_project');
+  const [promptDetail, setPromptDetail] = useState('balanced');
+  const [agentType, setAgentType] = useState('generic');
 
   // Multi-Workspace states
   const [workspaces, setWorkspaces] = useState(["Main Workspace", "Client Spec Sheets", "Personal Sandbox"]);
@@ -537,6 +643,15 @@ export default function VibeHatchWizard() {
 
     const savedTheme = localStorage.getItem('vibe_hatch_theme') || 'dark';
     setTheme(savedTheme);
+
+    const savedPromptMode = localStorage.getItem('vibe_hatch_prompt_mode') || 'new_project';
+    setPromptMode(savedPromptMode);
+    
+    const savedPromptDetail = localStorage.getItem('vibe_hatch_prompt_detail') || 'balanced';
+    setPromptDetail(savedPromptDetail);
+    
+    const savedAgentType = localStorage.getItem('vibe_hatch_agent_type') || 'generic';
+    setAgentType(savedAgentType);
   }, []);
 
   // Check rate limit and safety budgets on load
@@ -761,6 +876,9 @@ export default function VibeHatchWizard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          promptMode,
+          promptDetail,
+          agentType,
           conversation,
           outputFormat,
           provider,
@@ -836,6 +954,9 @@ export default function VibeHatchWizard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          promptMode,
+          promptDetail,
+          agentType,
           conversation: updatedConversation,
           outputFormat,
           provider,
@@ -1787,8 +1908,97 @@ export default function VibeHatchWizard() {
                   </div>
                 ) : activePreviewTab === 'spec' ? (
                   /* TAB A: SPEC SHEET VIEW */
-                  <div className="font-mono text-[10px] text-emerald-400 select-all whitespace-pre-wrap flex-1">
-                    {cleanMarkdownForDisplay(currentPromptContent)}
+                  <div className="flex-1 flex flex-col min-h-0 overflow-y-auto space-y-5">
+                    {/* Prompt Quality Panel */}
+                    {(() => {
+                      const analysis = analyzePromptQuality(currentPromptContent, promptMode, promptDetail, agentType, selectedStack, dataRequirement);
+                      if (!analysis) return null;
+                      return (
+                        <div className="p-3 border rounded-xl space-y-2 select-none text-[10px] shrink-0 font-sans" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
+                          <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: 'var(--glass-border)' }}>
+                            <span className="font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                              <SvgIcon name="idea" className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span>Prompt Quality Analysis</span>
+                            </span>
+                            <span className="font-mono text-[9px] text-[var(--text-muted)]">
+                              Estimated Size: <strong className="text-emerald-500 font-semibold">{analysis.tokenEstimate.toLocaleString()} tokens</strong>
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[9px] pt-1">
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Architecture Clarity:</span>
+                              <span className="font-bold text-emerald-500">{analysis.grades.architecture}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Scope Control:</span>
+                              <span className="font-bold text-emerald-500">{analysis.grades.scope}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Database Consistency:</span>
+                              <span className={`font-bold ${analysis.grades.database === 'Fair' ? 'text-amber-500' : 'text-emerald-500'}`}>{analysis.grades.database}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Security Guidance:</span>
+                              <span className={`font-bold ${analysis.grades.security === 'Fair' ? 'text-amber-500' : 'text-emerald-500'}`}>{analysis.grades.security}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Token Efficiency:</span>
+                              <span className="font-bold text-emerald-500">{analysis.grades.token}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Verification Quality:</span>
+                              <span className="font-bold text-emerald-500">{analysis.grades.verification}</span>
+                            </div>
+                          </div>
+                          <div className="text-[8px] text-[var(--text-dim)] pt-1 text-center font-mono italic">
+                            {analysis.recommendation}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Spec Text Content */}
+                    <div className="font-mono text-[10px] text-emerald-400 select-all whitespace-pre-wrap p-2.5 rounded-lg border flex-1" style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--choice-bg)' }}>
+                      {cleanMarkdownForDisplay(currentPromptContent)}
+                    </div>
+
+                    {/* Follow-Up Prompts Section */}
+                    {(() => {
+                      const followUps = getFollowUpPrompts(promptMode, appName, selectedStack);
+                      return (
+                        <div className="mt-6 border-t pt-4 space-y-2.5 shrink-0 text-left font-sans" style={{ borderColor: 'var(--glass-border)' }}>
+                          <h5 className="text-[10px] uppercase font-mono tracking-wider font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                            <SvgIcon name="document" className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Optional Follow-Up Prompts</span>
+                          </h5>
+                          <p className="text-[9px] text-[var(--text-muted)] leading-relaxed">
+                            Pasting the full master spec repeatedly wastes token context. Use these targeted instructions for subsequent edits:
+                          </p>
+                          <div className="space-y-2">
+                            {followUps.map((fu) => (
+                              <div key={fu.title} className="p-2.5 border rounded-lg flex flex-col gap-1.5" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[9px] font-bold text-[var(--text-main)]">{fu.title}</span>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(fu.prompt);
+                                      alert(`Copied: ${fu.title}`);
+                                    }}
+                                    className="px-2 py-0.5 rounded text-[8px] font-bold text-emerald-450 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 cursor-pointer"
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                                <pre className="text-[8px] text-[var(--text-muted)] font-mono whitespace-pre-wrap leading-normal select-all bg-black/20 p-2 rounded border border-[var(--input-border)] max-h-[80px] overflow-y-auto">
+                                  {fu.prompt}
+                                </pre>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : (
                   /* TAB B: WORKSPACE FILE EXPLORER VIEW */
@@ -2287,6 +2497,72 @@ export default function VibeHatchWizard() {
                 </div>
               </div>
 
+              {/* Agent Prompt Options */}
+              <div className="space-y-3">
+                <span className="text-sm font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <SvgIcon name="idea" className="w-3.5 h-3.5 text-[var(--text-main)] shrink-0" />
+                  <span>Agent Prompt Configuration</span>
+                </span>
+                <p className="text-xs text-[var(--text-muted)] leading-normal">
+                  Customize the prompt mode, detail level, and optimize execution boundaries for target coding agents:
+                </p>
+                <div className="space-y-3.5 pt-1">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-muted)]">Prompt Mode</label>
+                    <select 
+                      value={promptMode} 
+                      onChange={(e) => {
+                        setPromptMode(e.target.value);
+                        localStorage.setItem('vibe_hatch_prompt_mode', e.target.value);
+                      }}
+                      className="w-full p-2.5 rounded-lg border text-xs font-mono bg-[var(--choice-bg)] text-[var(--text-main)] border-[var(--input-border)] cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    >
+                      <option value="new_project">New Project (Scratch Scaffolding)</option>
+                      <option value="existing_project">Existing Project / Continue Development</option>
+                      <option value="feature">Feature Implementation</option>
+                      <option value="bug_fix">Bug Fix & Troubleshooting</option>
+                      <option value="ui_improvement">UI/UX Polish Refinement</option>
+                      <option value="refactor">Code Refactoring</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-muted)]">Prompt Detail Level</label>
+                    <select 
+                      value={promptDetail} 
+                      onChange={(e) => {
+                        setPromptDetail(e.target.value);
+                        localStorage.setItem('vibe_hatch_prompt_detail', e.target.value);
+                      }}
+                      className="w-full p-2.5 rounded-lg border text-xs font-mono bg-[var(--choice-bg)] text-[var(--text-main)] border-[var(--input-border)] cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    >
+                      <option value="compact">Compact (Token-Sensitive)</option>
+                      <option value="balanced">Balanced (Recommended Default)</option>
+                      <option value="detailed">Detailed (Exhaustive Blueprint)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-muted)]">Agent Target Optimization</label>
+                    <select 
+                      value={agentType} 
+                      onChange={(e) => {
+                        setAgentType(e.target.value);
+                        localStorage.setItem('vibe_hatch_agent_type', e.target.value);
+                      }}
+                      className="w-full p-2.5 rounded-lg border text-xs font-mono bg-[var(--choice-bg)] text-[var(--text-main)] border-[var(--input-border)] cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    >
+                      <option value="generic">Generic Coding Agent</option>
+                      <option value="codex">Codex</option>
+                      <option value="gemini">Gemini</option>
+                      <option value="claude_code">Claude Code</option>
+                      <option value="cursor">Cursor AI Composer</option>
+                      <option value="windsurf">Windsurf</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               <hr className="border-zinc-800/80" style={{ borderColor: 'var(--glass-border)' }} />
 
               {/* Red Team Audit */}
@@ -2316,6 +2592,12 @@ export default function VibeHatchWizard() {
                 onClick={() => {
                   setSelectedStack([]);
                   setRunRedTeam(false);
+                  setPromptMode('new_project');
+                  localStorage.setItem('vibe_hatch_prompt_mode', 'new_project');
+                  setPromptDetail('balanced');
+                  localStorage.setItem('vibe_hatch_prompt_detail', 'balanced');
+                  setAgentType('generic');
+                  localStorage.setItem('vibe_hatch_agent_type', 'generic');
                 }}
                 className={`flex-1 py-3 rounded-xl transition cursor-pointer font-bold text-xs ${theme === 'dark' ? 'bg-zinc-800 hover:bg-zinc-750 text-zinc-300' : 'bg-slate-200 hover:bg-slate-350 text-slate-850'}`}
               >
