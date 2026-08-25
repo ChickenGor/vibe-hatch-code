@@ -1847,7 +1847,7 @@ export default function VibeHatchWizard() {
               </div>
               <button 
                 onClick={() => setIsStackDrawerOpen(false)}
-                className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer"
+                className={`p-1 rounded transition cursor-pointer ${theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
               </button>
@@ -1858,12 +1858,12 @@ export default function VibeHatchWizard() {
               {/* Tech Stack Matchmaker */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-zinc-200">🛠️ Tech Matchmaker</span>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-450 font-bold">
+                  <span className="text-sm font-bold text-[var(--text-main)]">🛠️ Tech Matchmaker</span>
+                  <span className={`font-mono text-[10px] px-2 py-0.5 rounded font-bold ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-200/60 text-slate-600'}`}>
                     {selectedStack.length} selected
                   </span>
                 </div>
-                <p className="text-xs text-zinc-400 leading-normal">
+                <p className="text-xs text-[var(--text-muted)] leading-normal">
                   Select technologies to automatically customize prompt templates and inject framework-specific configurations:
                 </p>
                 <div className="grid grid-cols-2 gap-3 pt-1">
@@ -1882,12 +1882,16 @@ export default function VibeHatchWizard() {
                         }}
                         className={`p-3.5 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer border select-none flex flex-col gap-1.5 ${
                           active 
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold' 
-                            : 'bg-zinc-800/40 text-zinc-400 border-zinc-700/60 hover:border-zinc-500'
+                            ? (theme === 'dark' 
+                                ? 'bg-emerald-500/10 text-emerald-450 border-emerald-500/30 font-bold' 
+                                : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30 font-bold') 
+                            : (theme === 'dark'
+                                ? 'bg-zinc-800/40 text-zinc-400 border-zinc-700/60 hover:border-zinc-500'
+                                : 'bg-slate-100/90 text-slate-700 border-slate-200/80 hover:border-slate-450 hover:bg-slate-200/40')
                         }`}
                       >
-                        <span className="font-bold text-[13px]">{tech.label}</span>
-                        <span className="text-[11px] text-zinc-550 leading-relaxed font-normal">{tech.desc}</span>
+                        <span className={`font-bold text-[13px] ${active ? '' : (theme === 'dark' ? 'text-zinc-200' : 'text-slate-800')}`}>{tech.label}</span>
+                        <span className={`text-[11px] leading-relaxed font-normal ${active ? (theme === 'dark' ? 'text-emerald-500/70' : 'text-emerald-800/70') : (theme === 'dark' ? 'text-zinc-500' : 'text-slate-500')}`}>{tech.desc}</span>
                       </button>
                     );
                   })}
@@ -1898,18 +1902,18 @@ export default function VibeHatchWizard() {
 
               {/* Red Team Audit */}
               <div className="space-y-3">
-                <span className="text-sm font-bold text-zinc-200 block">🔒 Security & Performance</span>
-                <p className="text-xs text-zinc-400 leading-normal">
+                <span className="text-sm font-bold text-[var(--text-main)] block">🔒 Security & Performance</span>
+                <p className="text-xs text-[var(--text-muted)] leading-normal">
                   Toggle on-demand security auditing to scan code templates for vulnerabilities, database race conditions, and performance bottlenecks:
                 </p>
-                <label className="flex items-center gap-3 cursor-pointer text-zinc-300 hover:text-white select-none w-fit pt-1">
+                <label className="flex items-center gap-3 cursor-pointer text-[var(--text-main)] hover:brightness-110 select-none w-fit pt-1">
                   <input 
                     type="checkbox" 
                     checked={runRedTeam} 
                     onChange={(e) => setRunRedTeam(e.target.checked)} 
                     className="accent-emerald-500 rounded cursor-pointer w-5 h-5"
                   />
-                  <span className="font-bold text-xs">Run Red-Team Security Audit</span>
+                  <span className="font-bold text-xs text-[var(--text-main)]">Run Red-Team Security Audit</span>
                 </label>
               </div>
             </div>
@@ -1921,7 +1925,7 @@ export default function VibeHatchWizard() {
                   setSelectedStack([]);
                   setRunRedTeam(false);
                 }}
-                className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 transition cursor-pointer font-bold text-xs"
+                className={`flex-1 py-3 rounded-xl transition cursor-pointer font-bold text-xs ${theme === 'dark' ? 'bg-zinc-800 hover:bg-zinc-750 text-zinc-300' : 'bg-slate-200 hover:bg-slate-350 text-slate-850'}`}
               >
                 Reset All
               </button>
