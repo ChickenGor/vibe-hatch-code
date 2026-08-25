@@ -2,12 +2,32 @@
 import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
-const STARTER_BLUEPRINTS = [
-  { label: "⚡ Web SaaS App", prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication." },
-  { label: "🧩 Chrome Extension", prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI." },
-  { label: "📱 Habit Tracker", prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence." },
-  { label: "🤖 PDF Chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
-];
+const STARTER_BLUEPRINTS = {
+  new_app: [
+    { label: "⚡ Web SaaS App", prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication." },
+    { label: "🧩 Chrome Extension", prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI." },
+    { label: "📱 Habit Tracker", prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence." },
+    { label: "🤖 PDF Chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
+  ],
+  add_feature: [
+    { label: "🔑 Add OAuth Login", prompt: "I want to add NextAuth Google OAuth login support to my existing React project." },
+    { label: "💳 Integrate Stripe", prompt: "I want to implement Stripe Checkout billing redirect sessions inside my payment router." },
+    { label: "📝 Markdown Editor", prompt: "I want to add a rich markdown text editor component with code preview highlighting." },
+    { label: "📊 Export to CSV", prompt: "I want to implement a data export utility that converts tables to CSV/Excel reports." }
+  ],
+  solve_problem: [
+    { label: "🚫 API Error 500", prompt: "My Next.js API route returns an internal server 500 error when receiving database requests. Help me debug it." },
+    { label: "🧩 Hydration Mismatch", prompt: "I am getting a React Hydration Mismatch error inside my Next.js client component layout. How do I fix it?" },
+    { label: "⏳ Memory Leak", prompt: "My long-running Node background server keeps increasing in memory consumption. Help me trace the leak." },
+    { label: "🔁 Infinite Loop", prompt: "My React useEffect hook is causing an infinite state update loop when fetching remote datasets." }
+  ],
+  refactor_redesign: [
+    { label: "🎨 Obsidian Void Theme", prompt: "Help me refactor my app styles to implement an Obsidian Void deep space layout theme with thin glass borders." },
+    { label: "💨 Convert to Tailwind", prompt: "I want to migrate my old CSS modules style layout sheets to modern utility Tailwind classes." },
+    { label: "📱 Mobile UX Audit", prompt: "My layout shifts and overflows on mobile viewports. Help me audit and optimize it for clean mobile grids." },
+    { label: "🧹 Clean UI Layout", prompt: "Help me refactor my dense sidebar components to use clean hover groups and lucide SVG icons." }
+  ]
+};
 
 const PROVIDER_MODELS = {
   google: [
@@ -60,7 +80,9 @@ export default function VibeHatchWizard() {
   const [theme, setTheme] = useState('dark');
 
   // Conversational chatbot states
-  const [conversation, setConversation] = useState([]);
+  const [conversation, setConversation] = useState([
+    { role: 'assistant', content: "Hi! I'm the Vibe Hatch Chatbot. I will interview you about your app idea, collect your requirements, and compile them into a highly optimized prompt template. What kind of application are we building?" }
+  ]);
   const [chatInput, setChatInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -113,6 +135,35 @@ export default function VibeHatchWizard() {
     "Productivity Bots": -1
   });
 
+  // Multi-Intent states
+  const [intentMode, setIntentMode] = useState('new_app');
+  const [intentChats, setIntentChats] = useState({
+    new_app: [
+      { role: 'assistant', content: "Hi! I'm the Vibe Hatch Chatbot. I will interview you about your app idea, collect your requirements, and compile them into a highly optimized prompt template. What kind of application are we building?" }
+    ],
+    add_feature: [
+      { role: 'assistant', content: "Hi! Let's outline feature changes for your codebase. What tech stack are you using, and what changes are we making?" }
+    ],
+    solve_problem: [
+      { role: 'assistant', content: "Hi! Let's troubleshoot code errors. Describe the problem, paste the error logs or trace, and mention your stack." }
+    ],
+    refactor_redesign: [
+      { role: 'assistant', content: "Hi! Let's refactor your app structure or redesign its theme layout. What styling guidelines or cleanup goals do you have?" }
+    ]
+  });
+  const [intentVersions, setIntentVersions] = useState({
+    new_app: [],
+    add_feature: [],
+    solve_problem: [],
+    refactor_redesign: []
+  });
+  const [intentVersionIdx, setIntentVersionIdx] = useState({
+    new_app: -1,
+    add_feature: -1,
+    solve_problem: -1,
+    refactor_redesign: -1
+  });
+
   // Prompt execution parameter states
   const [temperature, setTemperature] = useState(0.2);
   const [maxTokens, setMaxTokens] = useState(4000);
@@ -137,15 +188,20 @@ export default function VibeHatchWizard() {
     else setGreeting("Good evening");
   }, []);
 
-  // Initial greeting message in chat
-  useEffect(() => {
-    setConversation([
-      {
-        role: 'assistant',
-        content: "Hi! I'm the Vibe Hatch Chatbot. I will interview you about your app idea, collect your requirements, and compile them into a highly optimized prompt template that you can feed into code-generation AIs (like Cursor, Claude, or ChatGPT) to build your project. Let's start with your raw idea! What kind of application are we building?"
-      }
-    ]);
-  }, []);
+  const switchIntent = (targetMode) => {
+    // Save current active state
+    setIntentChats(prev => ({ ...prev, [intentMode]: conversation }));
+    setIntentVersions(prev => ({ ...prev, [intentMode]: versions }));
+    setIntentVersionIdx(prev => ({ ...prev, [intentMode]: currentVersionIdx }));
+    
+    // Switch active mode
+    setIntentMode(targetMode);
+    
+    // Load active mode state
+    setConversation(intentChats[targetMode] || []);
+    setVersions(intentVersions[targetMode] || []);
+    setCurrentVersionIdx(intentVersionIdx[targetMode] ?? -1);
+  };
 
   // Theme & API key sync
   useEffect(() => {
@@ -326,7 +382,8 @@ export default function VibeHatchWizard() {
           customApiKey: customKeys[provider] || null,
           temperature,
           maxTokens,
-          systemNudge
+          systemNudge,
+          intentMode
         })
       });
 
@@ -374,7 +431,8 @@ export default function VibeHatchWizard() {
           customApiKey: customKeys[provider] || null,
           temperature,
           maxTokens,
-          systemNudge
+          systemNudge,
+          intentMode
         })
       });
 
@@ -434,7 +492,8 @@ export default function VibeHatchWizard() {
           customApiKey: customKeys[provider] || null,
           temperature,
           maxTokens,
-          systemNudge
+          systemNudge,
+          intentMode
         })
       });
 
@@ -715,12 +774,35 @@ export default function VibeHatchWizard() {
         )}
         
         {/* Warning banner centered at top */}
-        <div className="pt-4 px-4 flex justify-center shrink-0">
+        <div className="pt-4 px-4 flex flex-col items-center gap-3 shrink-0">
           <div className={`bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0 ${
             theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'
           }`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
             <span className="truncate">Vibe Hatch AI can make mistakes. Verify important prompt outputs.</span>
+          </div>
+
+          {/* Dynamic Intent Selector Tabs */}
+          <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px] shadow-sm max-w-md w-full justify-between" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+            {[
+              { id: 'new_app', name: 'Build App', desc: 'Create app specifications from scratch' },
+              { id: 'add_feature', name: 'Add Feature', desc: 'Iterate or insert new code patterns' },
+              { id: 'solve_problem', name: 'Solve Bug', desc: 'Troubleshoot and write code fixes' },
+              { id: 'refactor_redesign', name: 'Redesign UI', desc: 'Refactor layout style sheets' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => switchIntent(tab.id)}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-semibold transition-all cursor-pointer text-center ${
+                  intentMode === tab.id 
+                    ? 'bg-emerald-500 text-black font-black shadow-md scale-[1.01]' 
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+                title={tab.desc}
+              >
+                {tab.name}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -735,7 +817,10 @@ export default function VibeHatchWizard() {
                   {greeting}, Creator.
                 </h2>
                 <h3 className="text-lg font-light" style={{ color: 'var(--text-muted)' }}>
-                  What should we build today?
+                  {intentMode === 'new_app' ? 'What should we build today?' :
+                   intentMode === 'add_feature' ? 'What features or changes are we planning?' :
+                   intentMode === 'solve_problem' ? 'What bug or error trace should we solve?' :
+                   'What layouts or visual refinements are we refactoring?'}
                 </h3>
               </div>
 
@@ -798,7 +883,7 @@ export default function VibeHatchWizard() {
 
               {/* Action Suggestion Pills */}
               <div className="flex flex-wrap justify-center gap-2 pt-2">
-                {STARTER_BLUEPRINTS.map((bp) => (
+                {(STARTER_BLUEPRINTS[intentMode] || []).map((bp) => (
                   <button
                     key={bp.label}
                     onClick={() => handleSendMessage(null, bp.prompt)}
@@ -959,12 +1044,25 @@ export default function VibeHatchWizard() {
 
       {/* 3. COLLAPSIBLE RIGHT PREVIEW PANEL */}
       <section
-        className={`border-l flex flex-col h-screen shrink-0 transition-all duration-300 ease-in-out relative ${
-          isPreviewOpen ? 'w-[450px] opacity-100' : 'w-0 opacity-0 overflow-hidden border-l-0'
+        className={`border-l flex flex-col transition-all duration-300 ease-in-out fixed lg:static inset-y-0 right-0 z-30 h-full lg:h-screen shrink-0 relative ${
+          isPreviewOpen 
+            ? 'w-full sm:w-[400px] lg:w-[420px] opacity-100 translate-x-0' 
+            : 'w-0 opacity-0 overflow-hidden border-l-0 translate-x-full lg:translate-x-0'
         }`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
       >
-        <div className="p-4 flex flex-col h-full justify-between">
+        <div className="p-4 flex flex-col h-full justify-between overflow-y-auto">
+          {/* Header Close button for Mobile/Tablet */}
+          <div className="flex justify-end mb-2 shrink-0">
+            <button
+              onClick={() => setIsPreviewOpen(false)}
+              className="p-1 rounded text-zinc-400 hover:text-white transition cursor-pointer hover:bg-[var(--choice-hover)] flex items-center justify-center gap-1 text-[10px]"
+              title="Close Panel"
+            >
+              <span>Close Output</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
           
           {versions.length === 0 && !isCompiling ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6 my-auto select-none">
@@ -1373,6 +1471,20 @@ export default function VibeHatchWizard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile/Tablet Drawer Backdrop overlays */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-35 md:hidden animate-fade-in"
+        />
+      )}
+      {isPreviewOpen && (
+        <div 
+          onClick={() => setIsPreviewOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-25 lg:hidden animate-fade-in"
+        />
       )}
     </div>
   );

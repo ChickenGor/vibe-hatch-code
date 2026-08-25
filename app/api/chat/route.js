@@ -78,7 +78,8 @@ export async function POST(req) {
       modelId,
       temperature = 0.7,
       maxTokens,
-      systemNudge
+      systemNudge,
+      intentMode = 'new_app'
     } = body;
 
     // Resolve API key
@@ -107,17 +108,46 @@ export async function POST(req) {
 
     const model = getModelInstance(provider, activeApiKey, modelId);
 
-    const systemInstruction = `You are the Vibe Hatch Chatbot, a friendly requirements-gathering PM and prompt engineer.
-Your goal is to interview the user and collect details to generate a developer prompt template for their app.
+    // Dynamic Interview Prompt engineering
+    let modeInstruction = '';
+    if (intentMode === 'add_feature') {
+      modeInstruction = `You are the Vibe Hatch Chatbot, a requirements-gathering PM and codebase architect.
+Your goal is to interview the user and collect details to compile a developer prompt template to ADD features or make changes to an EXISTING codebase.
+Ask exactly ONE friendly question at a time to discover:
+1. What is the current tech stack and file structure of the existing app?
+2. What exact feature, route, or utility are we adding?
+3. How should this new feature interact with existing data models or authentication?
+4. Do you have any specific code snippets or dependency restrictions?`;
+    } else if (intentMode === 'solve_problem') {
+      modeInstruction = `You are the Vibe Hatch Chatbot, a friendly troubleshooting assistant and Senior Debugging PM.
+Your goal is to interview the user and collect details to compile a developer prompt template to FIX a bug or solve an issue.
+Ask exactly ONE friendly question at a time to discover:
+1. What error message, stack trace, or buggy behavior are you seeing?
+2. What is the active tech stack and the component/file where the error occurs?
+3. What is the expected behavior and what steps reproduce the bug?
+4. What mitigations or workarounds have you already tried?`;
+    } else if (intentMode === 'refactor_redesign') {
+      modeInstruction = `You are the Vibe Hatch Chatbot, a friendly styling architect and code cleanup PM.
+Your goal is to interview the user and collect details to compile a developer prompt template to REFACTOR or REDESIGN an existing application layout or code block.
+Ask exactly ONE friendly question at a time to discover:
+1. What is the current layout theme/styling and the code block or folder needing clean-up?
+2. What is your redesign target (e.g. Obsidian Void dark theme, Tailwind migration, modular component separation)?
+3. Are there any design tokens, spacing guidelines, or accessibility standards to follow?
+4. Should we focus on visual aesthetics, page responsiveness, or performance optimization?`;
+    } else {
+      // Default: new_app
+      modeInstruction = `You are the Vibe Hatch Chatbot, a friendly requirements-gathering PM and prompt engineer.
+Your goal is to interview the user and collect details to generate a developer prompt template to build a NEW app from scratch.
 Ask exactly ONE clear, friendly question at a time to discover:
 1. Core App Idea & Purpose
 2. Target Platform/Environment (Web, Mobile, Extension, Desktop, Bot, API)
 3. Main Features & Requirements
 4. Preferred Tech Stack & Styling (e.g. Tailwind, Frosted Glass)
-5. Data Storage / Persistence (e.g. LocalStorage, Supabase, Cloud DB, Vector Memory)
+5. Data Storage / Persistence (e.g. LocalStorage, Supabase, Cloud DB, Vector Memory)`;
+    }
 
-CRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.
-Once you have collected the user's needs, or if they ask to build/hatch the prompt directly, summarize what is collected and append the exact tag "[READY_TO_HATCH]" at the very end of your response.` + (systemNudge ? `\n\nCustom instruction override: ${systemNudge}` : '');
+    const systemInstruction = modeInstruction + `\n\nCRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.
+Once you have collected the user's details, or if they ask to hatch the prompt, summarize what is collected and append the exact tag "[READY_TO_HATCH]" at the very end of your response.` + (systemNudge ? `\n\nCustom instruction override: ${systemNudge}` : '');
 
     // Token efficiency: send only the last 8 messages (4 turns) of the conversation to keep input context small
     const prunedConversation = conversation.slice(-8).map(msg => ({
