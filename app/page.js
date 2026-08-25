@@ -1837,7 +1837,7 @@ export default function VibeHatchWizard() {
           />
           {/* Drawer Panel */}
           <div 
-            className="fixed top-0 right-0 h-full w-[85vw] max-w-sm bg-zinc-900 border-l border-zinc-800 z-50 flex flex-col shadow-2xl transition-transform ease-out duration-300 translate-x-0 animate-slide-in"
+            className="fixed top-0 right-0 h-full w-[90vw] sm:w-[500px] max-w-lg bg-zinc-900 border-l border-zinc-800 z-50 flex flex-col shadow-2xl transition-transform ease-out duration-300 translate-x-0 animate-slide-in"
             style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
           >
             {/* Header */}
