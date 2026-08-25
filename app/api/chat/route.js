@@ -84,6 +84,11 @@ export async function POST(req) {
       runRedTeam = false
     } = body;
 
+    const ALLOWED_STACK_IDS = ['nextjs', 'vite', 'supabase', 'prisma', 'postgres', 'sqlite', 'tailwind', 'shadcn'];
+    const validatedStack = Array.isArray(selectedStack)
+      ? selectedStack.filter(id => ALLOWED_STACK_IDS.includes(id))
+      : [];
+
     // Resolve API key
     let activeApiKey = customApiKey || userApiKey;
     if (!activeApiKey) {
@@ -149,8 +154,8 @@ Ask exactly ONE clear, friendly question at a time to discover:
     }
 
     let stackContext = '';
-    if (selectedStack && selectedStack.length > 0) {
-      stackContext = `\n\nUser pre-selected tech stack tags: [${selectedStack.join(', ')}]. Tailor your questions to integrate these, and don't ask what stack they want if it is already selected.`;
+    if (validatedStack && validatedStack.length > 0) {
+      stackContext = `\n\nUser pre-selected tech stack tags: [${validatedStack.join(', ')}]. Tailor your questions to integrate these, and don't ask what stack they want if it is already selected.`;
     }
 
     const systemInstruction = modeInstruction + stackContext + `\n\nCRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.

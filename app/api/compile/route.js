@@ -192,6 +192,11 @@ export async function POST(req) {
       runRedTeam = false
     } = body;
 
+    const ALLOWED_STACK_IDS = ['nextjs', 'vite', 'supabase', 'prisma', 'postgres', 'sqlite', 'tailwind', 'shadcn'];
+    const validatedStack = Array.isArray(selectedStack)
+      ? selectedStack.filter(id => ALLOWED_STACK_IDS.includes(id))
+      : [];
+
     // 1. Resolve the API Key (BYOK overrides server environment variables)
     let activeApiKey = customApiKey || userApiKey;
 
@@ -242,8 +247,8 @@ export async function POST(req) {
     };
 
     let injectedStackBlueprints = '';
-    if (selectedStack.length > 0) {
-      injectedStackBlueprints = `\n\n[USER-SELECTED STACK SPECS]\n` + selectedStack.map(s => STACK_BLUEPRINTS[s] || '').filter(Boolean).join('\n') + `\n`;
+    if (validatedStack.length > 0) {
+      injectedStackBlueprints = `\n\n[USER-SELECTED STACK SPECS]\n` + validatedStack.map(s => STACK_BLUEPRINTS[s] || '').filter(Boolean).join('\n') + `\n`;
     }
 
     const techEnforcement = `\n\nTECHNICAL REFERENCE SPECIFICATIONS:\nUse these standard blueprints if the user chose or implied these technologies:\n\n[EXECUTION ENVIRONMENT]\n${selectedEnvSpec}\n\n[DATA & PERSISTENCE TOPOLOGY]\n${selectedPersistenceSpec}\n${injectedStackBlueprints}`;
