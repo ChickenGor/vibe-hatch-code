@@ -118,6 +118,8 @@ export default function VibeHatchWizard() {
   const [maxTokens, setMaxTokens] = useState(4000);
   const [systemNudge, setSystemNudge] = useState("");
   const [isParamsOpen, setIsParamsOpen] = useState(false);
+  const [byokRequestsToday, setByokRequestsToday] = useState(0);
+  const [byokSafetyBudget, setByokSafetyBudget] = useState(50);
 
   // UI state: Collapsible Prompt Preview Panel
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
@@ -179,7 +181,7 @@ export default function VibeHatchWizard() {
     setTheme(savedTheme);
   }, []);
 
-  // Check rate limit on load
+  // Check rate limit and safety budgets on load
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const storedLimit = localStorage.getItem('vibe_hatch_limit');
@@ -193,6 +195,25 @@ export default function VibeHatchWizard() {
       }
     } else {
       localStorage.setItem('vibe_hatch_limit', JSON.stringify({ date: today, used: 0 }));
+    }
+
+    // BYOK safety budgets check
+    const savedBudget = localStorage.getItem('vibe_hatch_byok_budget');
+    if (savedBudget) {
+      setByokSafetyBudget(parseInt(savedBudget));
+    }
+
+    const storedUsage = localStorage.getItem('vibe_hatch_byok_usage');
+    if (storedUsage) {
+      const { date, count } = JSON.parse(storedUsage);
+      if (date === today) {
+        setByokRequestsToday(count);
+      } else {
+        localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: 0 }));
+        setByokRequestsToday(0);
+      }
+    } else {
+      localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: 0 }));
     }
   }, []);
 
@@ -313,6 +334,12 @@ export default function VibeHatchWizard() {
       if (!res.ok) throw new Error(data.error || 'Failed to get chat response.');
 
       setConversation(prev => [...prev, { role: 'assistant', content: data.result }]);
+      if (customKeys[provider]) {
+        const today = new Date().toISOString().split('T')[0];
+        const nextCount = byokRequestsToday + 1;
+        setByokRequestsToday(nextCount);
+        localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: nextCount }));
+      }
     } catch (err) {
       setErrorMessage(err.message);
     } finally {
@@ -363,6 +390,11 @@ export default function VibeHatchWizard() {
         const today = new Date().toISOString().split('T')[0];
         localStorage.setItem('vibe_hatch_limit', JSON.stringify({ date: today, used: 1 }));
         setSessionsLeft(0);
+      } else {
+        const today = new Date().toISOString().split('T')[0];
+        const nextCount = byokRequestsToday + 1;
+        setByokRequestsToday(nextCount);
+        localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: nextCount }));
       }
 
       confetti({
@@ -413,6 +445,12 @@ export default function VibeHatchWizard() {
       const newVersions = [...versions, newSpec];
       setVersions(newVersions);
       setCurrentVersionIdx(newVersions.length - 1);
+      if (customKeys[provider]) {
+        const today = new Date().toISOString().split('T')[0];
+        const nextCount = byokRequestsToday + 1;
+        setByokRequestsToday(nextCount);
+        localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: nextCount }));
+      }
     } catch (err) {
       setErrorMessage(err.message);
     } finally {
@@ -588,15 +626,38 @@ export default function VibeHatchWizard() {
 
         {/* Sidebar Bottom */}
         <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-          <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
-            <div className="flex items-center justify-between mb-1">
-              <span>Free Tier Quota</span>
-              <span className="text-emerald-500 font-bold">{sessionsLeft}/1</span>
+          {customKeys[provider] ? (
+            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+              <div className="flex items-center justify-between mb-1">
+                <span>Key Daily Usage</span>
+                <span className={`font-bold ${
+                  byokRequestsToday >= byokSafetyBudget ? 'text-rose-500 font-black' :
+                  byokRequestsToday >= byokSafetyBudget * 0.8 ? 'text-amber-500' :
+                  'text-emerald-500'
+                }`}>{byokRequestsToday}/{byokSafetyBudget} req</span>
+              </div>
+              <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div 
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    byokRequestsToday >= byokSafetyBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
+                    byokRequestsToday >= byokSafetyBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
+                    'bg-emerald-500'
+                  }`} 
+                  style={{ width: `${Math.min(100, (byokRequestsToday / byokSafetyBudget) * 100)}%` }}
+                ></div>
+              </div>
             </div>
-            <div className="w-full bg-zinc-800 rounded-full h-1">
-              <div className="bg-emerald-500 h-1 rounded-full" style={{ width: sessionsLeft > 0 ? '100%' : '0%' }}></div>
+          ) : (
+            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+              <div className="flex items-center justify-between mb-1">
+                <span>Free Tier Quota</span>
+                <span className="text-emerald-500 font-bold">{sessionsLeft}/1</span>
+              </div>
+              <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div className="bg-emerald-500 h-1 rounded-full animate-pulse" style={{ width: sessionsLeft > 0 ? '100%' : '0%' }}></div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Theme toggler */}
           <button
@@ -1146,17 +1207,42 @@ export default function VibeHatchWizard() {
                 />
                 
                 {provider !== 'ollama' && (
-                  <div className="text-[10px] pt-1.5 pl-0.5">
-                    <a 
-                      href={getApiKeyLink()} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-emerald-500 hover:text-emerald-400 font-semibold underline inline-flex items-center gap-1"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3M17 6l3 3"/></svg>
-                      Get your {getActiveModelLabel()} API Key ↗
-                    </a>
-                  </div>
+                  <>
+                    <div className="text-[10px] pt-1.5 pl-0.5">
+                      <a 
+                        href={getApiKeyLink()} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-emerald-500 hover:text-emerald-400 font-semibold underline inline-flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3M17 6l3 3"/></svg>
+                        Get your {getActiveModelLabel()} API Key ↗
+                      </a>
+                    </div>
+
+                    <div className="space-y-1.5 mt-4 text-left border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                      <label className="block text-[11px] font-mono uppercase tracking-wider font-semibold">
+                        Daily Safety Request Limit:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="5"
+                          max="1000"
+                          value={byokSafetyBudget}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 50;
+                            setByokSafetyBudget(val);
+                            localStorage.setItem('vibe_hatch_byok_budget', val.toString());
+                          }}
+                          className="liquid-input font-mono text-xs w-20 !p-1.5"
+                        />
+                        <span className="text-[10px] text-zinc-500">
+                          requests. Warns you as usage approaches this limit.
+                        </span>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 
