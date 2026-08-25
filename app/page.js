@@ -3,22 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
 const STARTER_BLUEPRINTS = [
-  {
-    label: "⚡ Web SaaS App",
-    prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication."
-  },
-  {
-    label: "🧩 Chrome Extension",
-    prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI."
-  },
-  {
-    label: "📱 Habit Tracker",
-    prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence."
-  },
-  {
-    label: "🤖 PDF Chatbot",
-    prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions."
-  }
+  { label: "⚡ Web SaaS App", prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication." },
+  { label: "🧩 Chrome Extension", prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI." },
+  { label: "📱 Habit Tracker", prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence." },
+  { label: "🤖 PDF Chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
 ];
 
 export default function VibeHatchWizard() {
@@ -47,9 +35,23 @@ export default function VibeHatchWizard() {
   const [copied, setCopied] = useState(false);
   const [outputFormat, setOutputFormat] = useState('standard');
 
+  // UI state: Collapsible Prompt Preview Panel
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+
+  // Time-of-day greeting
+  const [greeting, setGreeting] = useState("Good morning");
+
   const messagesEndRef = useRef(null);
 
-  // Initial greeting
+  // Determine local greeting
+  useEffect(() => {
+    const hr = new Date().getHours();
+    if (hr < 12) setGreeting("Good morning");
+    else if (hr < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  }, []);
+
+  // Initial greeting message in chat
   useEffect(() => {
     setConversation([
       {
@@ -110,7 +112,7 @@ export default function VibeHatchWizard() {
     setIsModalOpen(false);
   };
 
-  // Requirements Extractor Heuristics (Token Efficient, runs locally!)
+  // Heuristic tracker status
   const getRequirementStatus = () => {
     const allText = conversation.map(m => m.content.toLowerCase()).join(' ');
     const userMessages = conversation.filter(m => m.role === 'user');
@@ -124,17 +126,9 @@ export default function VibeHatchWizard() {
   };
 
   const reqStatus = getRequirementStatus();
-  const readyToHatch = reqStatus.idea && reqStatus.platform; // Dynamic trigger
+  const readyToHatch = reqStatus.idea && reqStatus.platform;
+  const isAiReady = conversation.length > 1 && conversation[conversation.length - 1].content.includes('[READY_TO_HATCH]');
 
-  // Check if AI output flagged ready to compile
-  const isAiReady = conversation.length > 1 && 
-    conversation[conversation.length - 1].content.includes('[READY_TO_HATCH]');
-
-  const currentStatusString = isAiReady || (reqStatus.idea && reqStatus.platform && reqStatus.features)
-    ? "Requirements Gathered! Ready to Hatch." 
-    : "Collecting App Blueprint Parameters...";
-
-  // Chat message submission
   const handleSendMessage = async (e, directText = null) => {
     if (e) e.preventDefault();
     const promptText = directText || chatInput;
@@ -168,10 +162,9 @@ export default function VibeHatchWizard() {
     }
   };
 
-  // Final Prompt compilation execution
   const handleHatchPrompt = async () => {
     if (conversation.filter(m => m.role === 'user').length === 0) {
-      setErrorMessage("Please write some app ideas to get started first!");
+      setErrorMessage("Please type some ideas to get started first!");
       return;
     }
 
@@ -182,6 +175,7 @@ export default function VibeHatchWizard() {
 
     setIsCompiling(true);
     setErrorMessage('');
+    setIsPreviewOpen(true); // Open compiler preview panel automatically
 
     try {
       const res = await fetch('/api/compile', {
@@ -222,7 +216,6 @@ export default function VibeHatchWizard() {
     }
   };
 
-  // Compiled Prompt Refinement / Tuning
   const handleRefinePrompt = async (e) => {
     if (e) e.preventDefault();
     if (!refinementInput.trim() || isCompiling) return;
@@ -230,7 +223,6 @@ export default function VibeHatchWizard() {
     setIsCompiling(true);
     setErrorMessage('');
 
-    // Append refinement request to conversation for contextual compilation
     const refinementInstruction = `Refine the compiled prompt: ${refinementInput}`;
     const updatedConversation = [...conversation, { role: 'user', content: refinementInstruction }];
     setConversation(updatedConversation);
@@ -262,7 +254,6 @@ export default function VibeHatchWizard() {
     }
   };
 
-  // Dynamic Token Savings Metrics based on prompt size
   const calculateTokenStats = (text) => {
     if (!text) return { compiled: 0, saved: 0, dollars: "0.00" };
     const compiledTokens = Math.round(text.length / 4);
@@ -292,360 +283,404 @@ export default function VibeHatchWizard() {
     URL.revokeObjectURL(url);
   };
 
+  // Check if chat is fresh/empty (only assistant greeting)
+  const isChatFresh = conversation.length <= 1;
+
   return (
     <div
-      className={`min-h-screen p-4 md:p-8 font-sans relative selection:bg-emerald-500/30 selection:text-emerald-500 transition-colors duration-500 ${theme === 'light' ? 'light-mode' : ''}`}
-      style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}
+      className={`min-h-screen flex relative transition-colors duration-500 selection:bg-emerald-500/30 selection:text-emerald-500 ${
+        theme === 'light' ? 'light-mode bg-white text-slate-900' : 'bg-[#121214] text-zinc-100'
+      }`}
     >
-      {/* Ambient background blur orbs */}
-      <div className="fixed top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500" style={{ backgroundColor: 'var(--orb-1)' }} />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[160px] pointer-events-none -z-10 transition-colors duration-500" style={{ backgroundColor: 'var(--orb-2)' }} />
-
-      {/* Header */}
-      <header className="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'var(--input-border)' }}>
+      {/* 1. LEFT SIDEBAR */}
+      <aside
+        className="w-60 border-r flex flex-col justify-between p-4 shrink-0 transition-all duration-300 hidden md:flex"
+        style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
+      >
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">🐣</span>
-            <h1 className="text-2xl font-black tracking-tight titanium-gradient">Vibe Hatch</h1>
+          {/* Sidebar Top: Project Switcher */}
+          <div className="flex items-center justify-between p-2.5 rounded-xl border mb-6" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-500 text-lg">🐣</span>
+              <span className="text-xs font-black tracking-tight">Vibe Hatch AI</span>
+            </div>
+            <span className="text-[10px] text-zinc-400">▾</span>
           </div>
-          <p className="text-xs mt-1 font-light tracking-wide" style={{ color: 'var(--text-muted)' }}>
-            AI Requirements Chatbot & Prompt Architect. Interview with AI to build the perfect code blueprint.
-          </p>
+
+          {/* Navigation Menu */}
+          <nav className="space-y-1">
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #10b981' }}>
+              <span>💬</span>
+              <span>Chat Assistant</span>
+            </button>
+            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:text-white transition-all">
+              <span>⚙️</span>
+              <span>API Configuration</span>
+            </button>
+          </nav>
+
+          {/* Folder Groups */}
+          <div className="mt-8 space-y-2">
+            <span className="text-[9px] uppercase font-mono tracking-wider font-bold block px-2" style={{ color: 'var(--text-dim)' }}>Saved Folders</span>
+            <div className="space-y-1 pl-2">
+              {["Web SaaS Specs", "Chrome Utilities", "Productivity Bots"].map((folder) => (
+                <div key={folder} className="text-xs py-1 hover:text-emerald-500 cursor-pointer truncate flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                  <span>📂</span>
+                  <span className="truncate">{folder}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Sidebar Bottom */}
+        <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+          <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+            <div className="flex items-center justify-between mb-1">
+              <span>Free Tier Quota</span>
+              <span className="text-emerald-500 font-bold">{sessionsLeft}/1</span>
+            </div>
+            <div className="w-full bg-zinc-800 rounded-full h-1">
+              <div className="bg-emerald-500 h-1 rounded-full" style={{ width: sessionsLeft > 0 ? '100%' : '0%' }}></div>
+            </div>
+          </div>
+
+          {/* Theme toggler */}
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition backdrop-blur-md shadow-sm cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border hover:brightness-110 transition cursor-pointer"
             style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
           >
-            <span>{theme === 'dark' ? '☀️ Opal Light' : '🌙 Obsidian Void'}</span>
+            <span>Appearance</span>
+            <span className="text-[10px]">{theme === 'dark' ? '☀️ Opal' : '🌙 Void'}</span>
           </button>
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition backdrop-blur-md shadow-sm cursor-pointer"
-            style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${customKey ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-slate-400'}`} />
-            <span style={{ color: 'var(--text-main)' }}>{customKey ? 'Custom BYOK' : 'Free Tier'}</span>
-            <span style={{ color: 'var(--text-dim)' }} className="ml-1">⚙️</span>
-          </button>
+          <span className="text-[9px] block text-center" style={{ color: 'var(--text-dim)' }}>
+            © 2026 ChickenRice Studio
+          </span>
         </div>
-      </header>
+      </aside>
 
-      {errorMessage && (
-        <div className="max-w-7xl mx-auto mb-4 p-3.5 bg-red-500/10 border border-red-500/30 backdrop-blur-md rounded-xl text-xs text-red-500 flex items-center gap-2">
-          <span>⚠️</span>
-          <span>{errorMessage}</span>
-        </div>
-      )}
-
-      {/* Main Grid Workspace */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      {/* 2. MAIN CENTERED CHAT COLUMN */}
+      <main className="flex-1 flex flex-col justify-between min-w-0 bg-[var(--bg-main)]">
         
-        {/* LEFT COLUMN: INTERVIEW CHATBOT ROOM */}
-        <div className="liquid-glass-card flex flex-col justify-between h-[680px]">
-          {/* Card Header & Dynamic Checklist */}
-          <div>
-            <div className="flex justify-between items-center pb-3 border-b mb-3" style={{ borderColor: 'var(--input-border)' }}>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-500 font-bold">
-                💬 Interview Assistant // {currentStatusString}
-              </span>
-            </div>
-
-            {/* Heuristics requirements checks progress bar */}
-            <div className="grid grid-cols-5 gap-1.5 p-2 rounded-xl mb-4 text-[10px] font-mono border" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
-                reqStatus.idea 
-                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
-                  : 'text-zinc-500'
-              }`}>
-                <span>{reqStatus.idea ? '✓' : '○'}</span> <span className="truncate">Idea</span>
-              </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
-                reqStatus.platform 
-                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
-                  : 'text-zinc-500'
-              }`}>
-                <span>{reqStatus.platform ? '✓' : '○'}</span> <span className="truncate">Platform</span>
-              </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
-                reqStatus.features 
-                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
-                  : 'text-zinc-500'
-              }`}>
-                <span>{reqStatus.features ? '✓' : '○'}</span> <span className="truncate">Features</span>
-              </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
-                reqStatus.tech 
-                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
-                  : 'text-zinc-500'
-              }`}>
-                <span>{reqStatus.tech ? '✓' : '○'}</span> <span className="truncate">Tech</span>
-              </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
-                reqStatus.storage 
-                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
-                  : 'text-zinc-500'
-              }`}>
-                <span>{reqStatus.storage ? '✓' : '○'}</span> <span className="truncate">Storage</span>
-              </div>
-            </div>
+        {/* Warning banner centered at top */}
+        <div className="pt-4 px-4 flex justify-center shrink-0">
+          <div className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0">
+            <span>💚</span>
+            <span className="truncate">Vibe Hatch AI can make mistakes. Verify important prompt outputs.</span>
           </div>
+        </div>
 
-          {/* Chat log body */}
-          <div className="flex-1 overflow-y-auto pr-1 space-y-3 mb-3 scroll-smooth no-scrollbar">
-            {conversation.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-2.5 max-w-[85%] animate-fade-in ${
-                  msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
-                }`}
-              >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-sm border ${
-                  theme === 'dark' 
-                    ? 'bg-white/5 border-white/10 text-zinc-300' 
-                    : 'bg-slate-200 border-slate-300 text-slate-800'
-                }`}>
-                  {msg.role === 'user' ? '👤' : '🤖'}
-                </div>
-                <div
-                  className={`p-3 rounded-2xl text-xs leading-relaxed border ${
-                    msg.role === 'user'
-                      ? (theme === 'dark'
-                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
-                          : 'bg-emerald-100/80 text-emerald-950 border-emerald-300')
-                      : (theme === 'dark'
-                          ? 'bg-white/[0.03] text-zinc-300 border-white/[0.05]'
-                          : 'bg-slate-100/90 text-slate-900 border-slate-300')
-                  }`}
-                >
-                  {msg.content.replace('[READY_TO_HATCH]', '')}
+        {/* Dynamic center workspace */}
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 flex flex-col justify-center">
+          
+          {isChatFresh ? (
+            /* FRESH STATE: Elegant Centered Greeting (Viper layout style) */
+            <div className="max-w-2xl w-full mx-auto text-center space-y-8 my-auto animate-fade-in">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-light tracking-tight text-[var(--text-main)]">
+                  {greeting}, Creator.
+                </h2>
+                <h3 className="text-lg font-light" style={{ color: 'var(--text-muted)' }}>
+                  What should we build today?
+                </h3>
+              </div>
+
+              {/* Centered chat bar */}
+              <div className="w-full bg-zinc-50 dark:bg-[#1a1a1c] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left">
+                <textarea
+                  className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] resize-none h-16 placeholder-zinc-400 pr-8"
+                  placeholder="Describe your app idea (e.g. A lo-fi desktop timer)..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  disabled={isLoading}
+                  autoFocus
+                />
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 mt-2">
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setIsModalOpen(true)} className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 transition" title="API Configuration">
+                      ⚙️
+                    </button>
+                    <button type="button" className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 transition" title="Prompt Parameters">
+                      ✨
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase">{provider} (Gemini 3.6)</span>
+                    <button
+                      type="button"
+                      disabled={isLoading || !chatInput.trim()}
+                      onClick={handleSendMessage}
+                      className="w-7 h-7 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition"
+                    >
+                      ↑
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex gap-2.5 max-w-[80%] animate-pulse">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-sm border ${
-                  theme === 'dark' 
-                    ? 'bg-white/5 border-white/10' 
-                    : 'bg-slate-200 border-slate-300'
-                }`}>
-                  🤖
-                </div>
-                <div className={`p-3 rounded-2xl text-xs border flex items-center gap-1 ${
-                  theme === 'dark'
-                    ? 'bg-white/[0.03] text-zinc-500 border-white/[0.05]'
-                    : 'bg-slate-100/90 text-slate-500 border-slate-300'
-                }`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* User inputs, actions & suggestion pills */}
-          <div className="space-y-3 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
-            
-            {/* Quick Starter Blueprints (Shows up at start) */}
-            {conversation.length === 1 && (
-              <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              {/* Action Suggestion Pills */}
+              <div className="flex flex-wrap justify-center gap-2 pt-2">
                 {STARTER_BLUEPRINTS.map((bp) => (
                   <button
                     key={bp.label}
                     onClick={() => handleSendMessage(null, bp.prompt)}
-                    className="px-2.5 py-1 text-[10px] font-medium rounded-full border transition cursor-pointer scale-95 hover:scale-100 whitespace-nowrap shadow-sm hover:border-emerald-500/50 hover:text-emerald-300"
-                    style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}
+                    className="px-3 py-1.5 rounded-lg border text-[10px] transition cursor-pointer hover:border-emerald-500/50 hover:text-emerald-500"
+                    style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}
                   >
                     {bp.label}
                   </button>
                 ))}
               </div>
-            )}
-
-            {/* Main Chat Input Form */}
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <input
-                type="text"
-                className="liquid-input text-xs"
-                placeholder="Talk to the requirements collector..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !chatInput.trim()}
-                className="liquid-btn-primary text-xs !py-2 !px-4 shrink-0 shadow-md"
-              >
-                Send
-              </button>
-            </form>
-
-            {/* Hatch Action CTA */}
-            <button
-              onClick={handleHatchPrompt}
-              disabled={isCompiling || conversation.filter(m => m.role === 'user').length === 0}
-              className={`w-full py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
-                readyToHatch || isAiReady
-                  ? 'bg-emerald-500 text-black border border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:brightness-110 active:scale-[0.99]'
-                  : 'bg-zinc-800 border border-zinc-700 text-zinc-400 cursor-not-allowed'
-              }`}
-            >
-              {isCompiling ? '⚡ Archiving requirements...' : 'Hatch Developer Prompt 📐'}
-            </button>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: GENERATED PROMPT PREVIEW */}
-        <div className="liquid-glass-card flex flex-col h-[680px]">
-          {/* Controls & Switchers */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--input-border)' }}>
-            {/* Format Tabs */}
-            <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-              <button
-                onClick={() => setOutputFormat('standard')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
-              >
-                📋 Standard Prompt
-              </button>
-              <button
-                onClick={() => setOutputFormat('cursorrules')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
-              >
-                ⚡ .cursorrules / IDE Rules
-              </button>
             </div>
-
-            {/* Version Switcher */}
-            {versions.length > 0 && (
-              <div className="flex items-center gap-1 p-1 rounded-xl border text-[9px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-                <span className="font-mono px-1 font-bold text-emerald-400">History:</span>
-                {versions.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentVersionIdx(idx)}
-                    className={`px-2 py-0.5 rounded font-mono font-bold transition ${currentVersionIdx === idx ? 'bg-emerald-500 text-white shadow-sm scale-105' : 'text-zinc-400 hover:text-white'}`}
-                  >
-                    v{idx + 1}
-                  </button>
-                ))}
+          ) : (
+            /* CONVERSATION ACTIVE STATE: Scrollable Chatroom */
+            <div className="max-w-2xl w-full mx-auto flex flex-col h-full justify-between">
+              
+              {/* Requirements Checklist Progress */}
+              <div className="grid grid-cols-5 gap-1.5 p-2 rounded-xl mb-4 text-[9px] font-mono border shrink-0" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                {Object.keys(reqStatus).map((key) => {
+                  const val = reqStatus[key];
+                  return (
+                    <div key={key} className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                      val 
+                        ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                        : 'text-zinc-500'
+                    }`}>
+                      <span>{val ? '✓' : '○'}</span> <span className="truncate capitalize">{key}</span>
+                    </div>
+                  );
+                })}
               </div>
-            )}
 
-            {/* Download/Copy actions */}
-            {versions.length > 0 && (
-              <div className="flex items-center gap-1.5">
+              {/* Messages container */}
+              <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4 scroll-smooth no-scrollbar">
+                {conversation.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex gap-2.5 max-w-[85%] animate-fade-in ${
+                      msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs border ${
+                      theme === 'dark' 
+                        ? 'bg-white/5 border-white/10 text-zinc-300' 
+                        : 'bg-slate-200 border-slate-300 text-slate-800'
+                    }`}>
+                      {msg.role === 'user' ? '👤' : '🤖'}
+                    </div>
+                    <div
+                      className={`p-3 rounded-2xl text-xs leading-relaxed border ${
+                        msg.role === 'user'
+                          ? (theme === 'dark'
+                              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                              : 'bg-emerald-100/80 text-emerald-950 border-emerald-300')
+                          : (theme === 'dark'
+                              ? 'bg-white/[0.03] text-zinc-300 border-white/[0.05]'
+                              : 'bg-slate-100/90 text-slate-900 border-slate-300')
+                      }`}
+                    >
+                      {msg.content.replace('[READY_TO_HATCH]', '')}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex gap-2.5 max-w-[80%] animate-pulse">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs border ${
+                      theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-slate-200 border-slate-300'
+                    }`}>
+                      🤖
+                    </div>
+                    <div className={`p-3 rounded-2xl text-xs border flex items-center gap-1 ${
+                      theme === 'dark'
+                        ? 'bg-white/[0.03] text-zinc-500 border-white/[0.05]'
+                        : 'bg-slate-100/90 text-slate-500 border-slate-300'
+                    }`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input Area (Conversation Mode) */}
+              <div className="space-y-3 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
+                <div className="w-full bg-zinc-50 dark:bg-[#1a1a1c] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2">
+                  <input
+                    type="text"
+                    className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] placeholder-zinc-400 px-1 py-1"
+                    placeholder="Ask standard follow-up questions..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    disabled={isLoading || !chatInput.trim()}
+                    onClick={handleSendMessage}
+                    className="w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 self-center"
+                  >
+                    ↑
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleHatchPrompt}
+                    disabled={isCompiling}
+                    className={`flex-1 py-2.5 rounded-xl font-bold transition text-xs cursor-pointer ${
+                      readyToHatch || isAiReady
+                        ? 'bg-emerald-500 text-black border border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:brightness-105'
+                        : 'bg-zinc-800 border border-zinc-700 text-zinc-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isCompiling ? '⚡ Gathering constraints...' : 'Hatch Developer Prompt 📐'}
+                  </button>
+
+                  <button
+                    onClick={() => setIsPreviewOpen(prev => !prev)}
+                    className="px-3 rounded-xl border text-xs font-semibold hover:bg-zinc-800 transition cursor-pointer"
+                    style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+                  >
+                    {isPreviewOpen ? 'Hide Preview' : 'Show Preview'}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* 3. COLLAPSIBLE RIGHT PREVIEW PANEL */}
+      <section
+        className={`border-l flex flex-col h-screen shrink-0 transition-all duration-300 ease-in-out relative ${
+          isPreviewOpen && versions.length > 0 ? 'w-[450px] opacity-100' : 'w-0 opacity-0 overflow-hidden border-l-0'
+        }`}
+        style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
+      >
+        <div className="p-4 flex flex-col h-full justify-between">
+          
+          {/* Controls bar */}
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--glass-border)' }}>
+              {/* Output format selectors */}
+              <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
                 <button
-                  onClick={downloadMarkdown}
-                  className="px-2.5 py-1 rounded-lg text-[10px] font-medium border transition cursor-pointer"
-                  style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+                  onClick={() => setOutputFormat('standard')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
                 >
-                  Download .md
+                  📋 Standard
                 </button>
                 <button
-                  onClick={copyToClipboard}
-                  className="px-2.5 py-1 rounded-lg text-[10px] font-medium border transition cursor-pointer"
-                  style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+                  onClick={() => setOutputFormat('cursorrules')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
                 >
+                  ⚡ .cursorrules
+                </button>
+              </div>
+
+              {/* Checkpoints */}
+              {versions.length > 1 && (
+                <div className="flex items-center gap-1 p-1 rounded-xl border text-[9px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                  {versions.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentVersionIdx(idx)}
+                      className={`px-1.5 py-0.5 rounded font-mono font-bold transition ${currentVersionIdx === idx ? 'bg-emerald-500 text-white' : 'text-zinc-400'}`}
+                    >
+                      v{idx + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Actions: Copy & Download */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">Compiled Output</span>
+              <div className="flex items-center gap-1.5">
+                <button onClick={downloadMarkdown} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                  Download
+                </button>
+                <button onClick={copyToClipboard} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
                   {copied ? "Copied! ✓" : "Copy"}
                 </button>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Token usage optimizer stats */}
-          {versions.length > 0 && (
-            <div className="mb-3 p-2.5 border rounded-xl text-[10px] font-mono flex flex-wrap justify-between items-center gap-2 backdrop-blur-md animate-fade-in" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+            {/* Token savings statistics */}
+            <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
               <div>
                 <span className="text-emerald-500 font-semibold">⚡ ~{stats?.saved?.toLocaleString()} Tokens Optimized</span>
                 <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
               </div>
-              <span className="text-[9px] px-1.5 py-0.5 rounded font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                Viewing v{currentVersionIdx + 1}
+              <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                v{currentVersionIdx + 1}
               </span>
             </div>
-          )}
+          </div>
 
-          {/* Compiled Output View */}
-          <div className="flex-1 rounded-xl p-4 font-mono text-[11px] text-emerald-400 overflow-y-auto border border-white/[0.08] whitespace-pre-wrap leading-relaxed select-all shadow-inner relative" style={{ backgroundColor: 'var(--code-bg)' }}>
+          {/* Compiled Output Viewbox */}
+          <div className="flex-1 rounded-xl p-3 font-mono text-[10px] text-emerald-400 overflow-y-auto border border-white/[0.08] whitespace-pre-wrap leading-relaxed select-all shadow-inner relative" style={{ backgroundColor: 'var(--code-bg)' }}>
             {isCompiling ? (
               <div className="space-y-4 animate-pulse p-2 font-sans select-none">
                 <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 w-fit">
                   <span>⚡ Archiving & generating prompt template...</span>
                 </div>
                 <div className="space-y-2 pt-2">
-                  <div className="h-3 bg-white/[0.1] rounded w-1/4 mb-3"></div>
-                  <div className="h-2 bg-white/[0.05] rounded w-3/4"></div>
-                  <div className="h-2 bg-white/[0.05] rounded w-1/2"></div>
-                  <div className="h-2 bg-white/[0.05] rounded w-5/6"></div>
+                  <div className="h-2 bg-white/[0.1] rounded w-1/4 mb-3"></div>
+                  <div className="h-1.5 bg-white/[0.05] rounded w-3/4"></div>
+                  <div className="h-1.5 bg-white/[0.05] rounded w-1/2"></div>
                 </div>
               </div>
-            ) : versions.length > 0 ? (
-              currentPromptContent
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center py-12 font-sans select-none font-light text-zinc-500">
-                <span className="text-4xl mb-3 opacity-30">📐</span>
-                <p className="text-xs font-semibold text-zinc-300">Prompt Template Preview Panel</p>
-                <p className="text-[10px] mt-1 max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                  Once requirements have been collected from the interview, click the "Hatch Developer Prompt" button on the left to compile your engineering prompt template.
-                </p>
-              </div>
+              currentPromptContent
             )}
           </div>
 
-          {/* Continuous refinement section for generated prompt */}
-          {versions.length > 0 && (
-            <div className="space-y-2 pt-3 border-t shrink-0 bg-inherit" style={{ borderColor: 'var(--input-border)' }}>
-              <span className="text-[9px] uppercase font-mono tracking-wider font-semibold block" style={{ color: 'var(--text-dim)' }}>
-                ⚡ Adjust Prompt Output Constraints
-              </span>
-              <div className="flex flex-wrap gap-1.5 text-[9px] font-mono">
-                <button
-                  onClick={() => { setRefinementInput("Make the implementation plan extremely modular, split into 5 structured stages."); }}
-                  className="liquid-choice !py-1 !px-2 font-medium cursor-pointer"
-                >
-                  🧱 More Modular Build Phases
-                </button>
-                <button
-                  onClick={() => { setRefinementInput("Add detailed TypeScript types and interfaces for the database schema."); }}
-                  className="liquid-choice !py-1 !px-2 font-medium cursor-pointer"
-                >
-                  🛡️ Strict TypeScript Safety
-                </button>
-                <button
-                  onClick={() => { setRefinementInput("Enforce strict Tailwind styling constraints and VisionOS Frosted Glass theme cues."); }}
-                  className="liquid-choice !py-1 !px-2 font-medium cursor-pointer"
-                >
-                  🎨 Frosted Glass Styling
-                </button>
-              </div>
+          {/* Continuous Prompt Refinements input */}
+          <div className="space-y-2 pt-3 border-t shrink-0" style={{ borderColor: 'var(--glass-border)' }}>
+            <span className="text-[8px] uppercase font-mono tracking-wider font-semibold block" style={{ color: 'var(--text-dim)' }}>
+              ⚡ Adjust Prompt Constraints
+            </span>
+            <form onSubmit={handleRefinePrompt} className="flex gap-1.5">
+              <input
+                type="text"
+                className="liquid-input text-[11px] !p-1.5"
+                placeholder="Request prompt edits (e.g. Add Zod schemas)..."
+                value={refinementInput}
+                onChange={(e) => setRefinementInput(e.target.value)}
+                disabled={isCompiling}
+              />
+              <button
+                type="submit"
+                disabled={isCompiling || !refinementInput.trim()}
+                className="liquid-btn-primary text-xs !py-1.5 !px-3 shrink-0 shadow-md"
+              >
+                {isCompiling ? '...' : 'Refine'}
+              </button>
+            </form>
+          </div>
 
-              <form onSubmit={handleRefinePrompt} className="flex gap-2">
-                <input
-                  type="text"
-                  className="liquid-input text-xs"
-                  placeholder="Request edits (e.g. Add Zod schemas)..."
-                  value={refinementInput}
-                  onChange={(e) => setRefinementInput(e.target.value)}
-                  disabled={isCompiling}
-                />
-                <button
-                  type="submit"
-                  disabled={isCompiling || !refinementInput.trim()}
-                  className="liquid-btn-primary text-xs !py-2 !px-4 shrink-0 shadow-md"
-                >
-                  {isCompiling ? '...' : 'Refine'}
-                </button>
-              </form>
-            </div>
-          )}
         </div>
-      </div>
+      </section>
 
       {/* Model settings configuration modal */}
       {isModalOpen && (
@@ -670,53 +705,18 @@ export default function VibeHatchWizard() {
             </div>
 
             <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border mb-4" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-              <button
-                type="button"
-                onClick={() => setProvider('google')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'google' ? 'bg-emerald-500 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>🟢</span><span>Gemini</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('anthropic')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'anthropic' ? 'bg-purple-600 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>🟣</span><span>Claude</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('openai')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'openai' ? 'bg-blue-600 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>🔵</span><span>GPT-4o</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('groq')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'groq' ? 'bg-orange-500 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>⚡</span><span>Groq</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('deepseek')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'deepseek' ? 'bg-cyan-600 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>🐋</span><span>DeepSeek</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('ollama')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1 ${provider === 'ollama' ? 'bg-emerald-600 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'}`}
-              >
-                <span>🖥️</span><span>Ollama</span>
-              </button>
+              {['google', 'anthropic', 'openai', 'groq', 'deepseek', 'ollama'].map((prov) => (
+                <button
+                  key={prov}
+                  type="button"
+                  onClick={() => setProvider(prov)}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer capitalize flex items-center justify-center gap-1 ${
+                    provider === prov ? 'bg-emerald-500 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {prov}
+                </button>
+              ))}
             </div>
 
             <form onSubmit={handleSaveKey} className="space-y-4">
@@ -785,23 +785,6 @@ export default function VibeHatchWizard() {
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="w-full py-6 mt-8 flex justify-center items-center">
-        <div
-          className="flex flex-wrap items-center gap-3 px-4 py-2 rounded-full border shadow-lg backdrop-blur-md text-xs"
-          style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}
-        >
-          <a
-            href="https://chickengor.github.io/jimmy_wong/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 font-mono hover:text-white transition-colors cursor-pointer"
-          >
-            <span>Engineered by <strong className="font-semibold tracking-wide" style={{ color: 'var(--text-main)' }}>ChickenRice Dev Studio</strong></span>
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }

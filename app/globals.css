@@ -32,44 +32,44 @@ body {
 /* ==========================================================================
    3. DUAL-THEME COLOR SYSTEM (DARK & LIGHT MODE VARIABLES)
 ========================================================================== */
-/* Default Dark Mode (Obsidian Void) */
+/* Default Dark Mode (Project Viper Dark) */
 :root {
-  --bg-main: #030305;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --glass-bg: rgba(18, 18, 24, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: rgba(0, 0, 0, 0.5);
-  --input-bg: rgba(255, 255, 255, 0.03);
-  --input-border: rgba(255, 255, 255, 0.08);
-  --input-focus: rgba(16, 185, 129, 0.4);
-  --choice-bg: rgba(255, 255, 255, 0.02);
-  --choice-hover: rgba(255, 255, 255, 0.06);
-  --code-bg: rgba(0, 0, 0, 0.45);
-  --orb-1: rgba(16, 185, 129, 0.15);
-  --orb-2: rgba(79, 70, 229, 0.12);
+  --bg-main: #121214;
+  --text-main: #ececf1;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+  --glass-bg: #1c1c1e;
+  --glass-border: #2a2a2c;
+  --glass-highlight: #323235;
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  --input-bg: #2c2c2e;
+  --input-border: #3a3a3c;
+  --input-focus: rgba(16, 185, 129, 0.5);
+  --choice-bg: #232325;
+  --choice-hover: #2c2c2e;
+  --code-bg: #09090b;
+  --orb-1: rgba(16, 185, 129, 0.03);
+  --orb-2: rgba(24, 24, 27, 0.05);
 }
 
-/* Light Mode Overrides (Opal Silver Glass - HIGH CONTRAST!) */
+/* Light Mode Overrides (Project Viper Light) */
 .light-mode {
-  --bg-main: #f1f5f9 !important;
-  --text-main: #0f172a !important; /* Deep dark navy */
-  --text-muted: #334155 !important; /* Darker slate for sharp readability! */
-  --text-dim: #64748b !important;
-  --glass-bg: rgba(255, 255, 255, 0.85) !important;
-  --glass-border: rgba(255, 255, 255, 1) !important;
-  --glass-highlight: rgba(255, 255, 255, 1) !important;
-  --glass-shadow: rgba(148, 163, 184, 0.25) !important;
-  --input-bg: #ffffff !important;
-  --input-border: rgba(148, 163, 184, 0.4) !important; /* Crisper input borders! */
-  --input-focus: rgba(16, 185, 129, 0.6) !important;
-  --choice-bg: rgba(241, 245, 249, 0.8) !important;
-  --choice-hover: #ffffff !important;
-  --code-bg: #0f172a !important; /* Keep code box dark! */
-  --orb-1: rgba(16, 185, 129, 0.25) !important;
-  --orb-2: rgba(59, 130, 246, 0.2) !important;
+  --bg-main: #ffffff !important;
+  --text-main: #0f172a !important;
+  --text-muted: #475569 !important;
+  --text-dim: #94a3b8 !important;
+  --glass-bg: #fcfcfc !important;
+  --glass-border: #f2f2f4 !important;
+  --glass-highlight: #ffffff !important;
+  --glass-shadow: rgba(0, 0, 0, 0.03) !important;
+  --input-bg: #f3f3f5 !important;
+  --input-border: #e4e4e6 !important;
+  --input-focus: rgba(16, 185, 129, 0.5) !important;
+  --choice-bg: #fafafb !important;
+  --choice-hover: #f3f3f5 !important;
+  --code-bg: #0f172a !important;
+  --orb-1: rgba(16, 185, 129, 0.02) !important;
+  --orb-2: rgba(241, 245, 249, 0.03) !important;
 }
 
 
