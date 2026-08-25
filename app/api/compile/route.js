@@ -318,7 +318,7 @@ This prompt template is intended for the user to copy and feed into another AI (
     }
 
     // 6. Trigger Universal Synthesis
-    const { text } = await generateText({
+    const { text, usage } = await generateText({
       model: model,
       system: systemInstruction + (systemNudge ? `\n\nCustom parameter instruction: ${systemNudge}` : ''),
       messages: messages,
@@ -326,7 +326,10 @@ This prompt template is intended for the user to copy and feed into another AI (
       maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
     });
 
-    return NextResponse.json({ result: text || '// Specification rendering engine returned an empty string.' });
+    return NextResponse.json({ 
+      result: text || '// Specification rendering engine returned an empty string.',
+      usage: usage
+    });
 
   } catch (error) {
     console.error('Multi-Model Backend Failure:', error);

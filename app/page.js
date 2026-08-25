@@ -242,6 +242,9 @@ export default function VibeHatchWizard() {
   const [isParamsOpen, setIsParamsOpen] = useState(false);
   const [byokRequestsToday, setByokRequestsToday] = useState(0);
   const [byokSafetyBudget, setByokSafetyBudget] = useState(50);
+  const [byokTokensToday, setByokTokensToday] = useState(0);
+  const [byokTokenBudget, setByokTokenBudget] = useState(100000);
+  const [lastResponseTokens, setLastResponseTokens] = useState(null);
 
   // UI state: Collapsible Prompt Preview Panel
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
@@ -337,6 +340,13 @@ export default function VibeHatchWizard() {
       setByokSafetyBudget(parseInt(savedBudget));
     }
 
+    const savedTokenBudget = localStorage.getItem('vibe_hatch_byok_token_budget');
+    if (savedTokenBudget) {
+      setByokTokenBudget(parseInt(savedTokenBudget));
+    } else {
+      localStorage.setItem('vibe_hatch_byok_token_budget', '100000');
+    }
+
     const storedUsage = localStorage.getItem('vibe_hatch_byok_usage');
     if (storedUsage) {
       const { date, count } = JSON.parse(storedUsage);
@@ -348,6 +358,19 @@ export default function VibeHatchWizard() {
       }
     } else {
       localStorage.setItem('vibe_hatch_byok_usage', JSON.stringify({ date: today, count: 0 }));
+    }
+
+    const storedTokenUsage = localStorage.getItem('vibe_hatch_byok_token_usage');
+    if (storedTokenUsage) {
+      const { date, count } = JSON.parse(storedTokenUsage);
+      if (date === today) {
+        setByokTokensToday(count);
+      } else {
+        localStorage.setItem('vibe_hatch_byok_token_usage', JSON.stringify({ date: today, count: 0 }));
+        setByokTokensToday(0);
+      }
+    } else {
+      localStorage.setItem('vibe_hatch_byok_token_usage', JSON.stringify({ date: today, count: 0 }));
     }
   }, []);
 
@@ -471,6 +494,19 @@ export default function VibeHatchWizard() {
       if (!res.ok) throw new Error(data.error || 'Failed to get chat response.');
 
       setConversation(prev => [...prev, { role: 'assistant', content: data.result }]);
+      
+      if (data.usage) {
+        const totalUsed = data.usage.totalTokens || 0;
+        setLastResponseTokens(totalUsed);
+        
+        if (customKeys[provider]) {
+          const today = new Date().toISOString().split('T')[0];
+          const nextTokens = byokTokensToday + totalUsed;
+          setByokTokensToday(nextTokens);
+          localStorage.setItem('vibe_hatch_byok_token_usage', JSON.stringify({ date: today, count: nextTokens }));
+        }
+      }
+
       if (customKeys[provider]) {
         const today = new Date().toISOString().split('T')[0];
         const nextCount = byokRequestsToday + 1;
@@ -525,6 +561,18 @@ export default function VibeHatchWizard() {
       const newVersions = [...versions, newSpec];
       setVersions(newVersions);
       setCurrentVersionIdx(newVersions.length - 1);
+
+      if (data.usage) {
+        const totalUsed = data.usage.totalTokens || 0;
+        setLastResponseTokens(totalUsed);
+        
+        if (customKeys[provider]) {
+          const today = new Date().toISOString().split('T')[0];
+          const nextTokens = byokTokensToday + totalUsed;
+          setByokTokensToday(nextTokens);
+          localStorage.setItem('vibe_hatch_byok_token_usage', JSON.stringify({ date: today, count: nextTokens }));
+        }
+      }
 
       if (!customKeys[provider]) {
         const today = new Date().toISOString().split('T')[0];
@@ -588,6 +636,19 @@ export default function VibeHatchWizard() {
       const newVersions = [...versions, newSpec];
       setVersions(newVersions);
       setCurrentVersionIdx(newVersions.length - 1);
+
+      if (data.usage) {
+        const totalUsed = data.usage.totalTokens || 0;
+        setLastResponseTokens(totalUsed);
+        
+        if (customKeys[provider]) {
+          const today = new Date().toISOString().split('T')[0];
+          const nextTokens = byokTokensToday + totalUsed;
+          setByokTokensToday(nextTokens);
+          localStorage.setItem('vibe_hatch_byok_token_usage', JSON.stringify({ date: today, count: nextTokens }));
+        }
+      }
+
       if (customKeys[provider]) {
         const today = new Date().toISOString().split('T')[0];
         const nextCount = byokRequestsToday + 1;
@@ -770,24 +831,47 @@ export default function VibeHatchWizard() {
         {/* Sidebar Bottom */}
         <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
           {customKeys[provider] ? (
-            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
-              <div className="flex items-center justify-between mb-1">
-                <span>Key Daily Usage</span>
-                <span className={`font-bold ${
-                  byokRequestsToday >= byokSafetyBudget ? 'text-rose-500 font-black' :
-                  byokRequestsToday >= byokSafetyBudget * 0.8 ? 'text-amber-500' :
-                  'text-emerald-500'
-                }`}>{byokRequestsToday}/{byokSafetyBudget} req</span>
+            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left space-y-2.5" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span>Request Budget</span>
+                  <span className={`font-bold ${
+                    byokRequestsToday >= byokSafetyBudget ? 'text-rose-500 font-black' :
+                    byokRequestsToday >= byokSafetyBudget * 0.8 ? 'text-amber-500' :
+                    'text-emerald-500'
+                  }`}>{byokRequestsToday}/{byokSafetyBudget} req</span>
+                </div>
+                <div className="w-full bg-zinc-800 rounded-full h-1">
+                  <div 
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      byokRequestsToday >= byokSafetyBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
+                      byokRequestsToday >= byokSafetyBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
+                      'bg-emerald-500'
+                    }`} 
+                    style={{ width: `${Math.min(100, (byokRequestsToday / byokSafetyBudget) * 100)}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full bg-zinc-800 rounded-full h-1">
-                <div 
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    byokRequestsToday >= byokSafetyBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
-                    byokRequestsToday >= byokSafetyBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
-                    'bg-emerald-500'
-                  }`} 
-                  style={{ width: `${Math.min(100, (byokRequestsToday / byokSafetyBudget) * 100)}%` }}
-                ></div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span>Token Budget</span>
+                  <span className={`font-bold ${
+                    byokTokensToday >= byokTokenBudget ? 'text-rose-500 font-black' :
+                    byokTokensToday >= byokTokenBudget * 0.8 ? 'text-amber-500' :
+                    'text-emerald-500'
+                  }`}>{byokTokensToday.toLocaleString()}/{byokTokenBudget.toLocaleString()}</span>
+                </div>
+                <div className="w-full bg-zinc-800 rounded-full h-1">
+                  <div 
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      byokTokensToday >= byokTokenBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
+                      byokTokensToday >= byokTokenBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
+                      'bg-emerald-500'
+                    }`} 
+                    style={{ width: `${Math.min(100, (byokTokensToday / byokTokenBudget) * 100)}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
           ) : (
@@ -956,6 +1040,12 @@ export default function VibeHatchWizard() {
               </div>
 
               {/* Centered chat bar */}
+              {lastResponseTokens !== null && (
+                <div className="w-full text-[10px] text-zinc-500 font-mono flex items-center justify-between px-2 py-0.5 select-none opacity-85">
+                  <span>Token Efficiency Index</span>
+                  <span>Last Response: <strong className="font-semibold text-emerald-555">{lastResponseTokens.toLocaleString()} tokens</strong></span>
+                </div>
+              )}
               <div 
                 className="w-full border rounded-2xl p-3 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left"
                 style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
@@ -1151,7 +1241,13 @@ export default function VibeHatchWizard() {
               </div>
 
               {/* Chat Input Area (Conversation Mode) */}
-              <div className="space-y-3 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
+              <div className="space-y-2 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
+                {lastResponseTokens !== null && (
+                  <div className="text-[10px] text-zinc-500 font-mono flex items-center justify-between px-2 py-0.5 select-none opacity-85">
+                    <span>Token Efficiency Index</span>
+                    <span>Last Response: <strong className="font-semibold text-emerald-550">{lastResponseTokens.toLocaleString()} tokens</strong></span>
+                  </div>
+                )}
                 <div 
                   className="w-full border rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2 items-center"
                   style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
@@ -1678,6 +1774,30 @@ export default function VibeHatchWizard() {
                         />
                         <span className="text-[10px] text-zinc-500">
                           requests. Warns you as usage approaches this limit.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 mt-4 text-left border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
+                      <label className="block text-[11px] font-mono uppercase tracking-wider font-semibold">
+                        Daily Safety Token Limit:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1000"
+                          max="10000000"
+                          step="1000"
+                          value={byokTokenBudget}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 100000;
+                            setByokTokenBudget(val);
+                            localStorage.setItem('vibe_hatch_byok_token_budget', val.toString());
+                          }}
+                          className="liquid-input font-mono text-xs w-28 !p-1.5"
+                        />
+                        <span className="text-[10px] text-zinc-500">
+                          tokens. Warns you as token consumption approaches this limit.
                         </span>
                       </div>
                     </div>

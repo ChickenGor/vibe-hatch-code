@@ -167,7 +167,7 @@ Once you have collected the user's details, or if they ask to hatch the prompt, 
       content: msg.content
     }));
 
-    const { text } = await generateText({
+    const { text, usage } = await generateText({
       model: model,
       system: systemInstruction,
       messages: prunedConversation,
@@ -175,7 +175,10 @@ Once you have collected the user's details, or if they ask to hatch the prompt, 
       maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
     });
 
-    return NextResponse.json({ result: text || 'Could not retrieve chatbot response.' });
+    return NextResponse.json({ 
+      result: text || 'Could not retrieve chatbot response.',
+      usage: usage 
+    });
 
   } catch (error) {
     console.error('Chat API Error:', error);
