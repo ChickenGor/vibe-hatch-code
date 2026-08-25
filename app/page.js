@@ -144,6 +144,7 @@ export default function VibeHatchWizard() {
   // Theme state
   const [theme, setTheme] = useState('dark');
   const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
   // Conversational chatbot states
   const [conversation, setConversation] = useState([
@@ -996,7 +997,55 @@ export default function VibeHatchWizard() {
                     </button>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-mono text-zinc-500 uppercase">{getActiveModelLabel()}</span>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                        className="text-[9px] font-mono text-zinc-500 hover:text-zinc-300 uppercase font-semibold flex items-center gap-1 transition select-none cursor-pointer"
+                        title="Change LLM Model"
+                      >
+                        <span>{getActiveModelLabel()}</span>
+                        <span className="text-[7px] text-zinc-500/80">▼</span>
+                      </button>
+
+                      {isModelDropdownOpen && (
+                        <>
+                          {/* Invisible Click Backdrop */}
+                          <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={() => setIsModelDropdownOpen(false)}
+                          />
+                          {/* Dropdown Options Container */}
+                          <div 
+                            className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border shadow-xl z-50 py-1.5 animate-slide-in text-[10px] text-left"
+                            style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+                          >
+                            <div className="px-3 py-1 text-[8px] uppercase tracking-wider font-mono text-zinc-500 font-bold border-b mb-1" style={{ borderColor: 'var(--input-border)' }}>
+                              Select Engine
+                            </div>
+                            {(PROVIDER_MODELS[provider] || []).map((m) => (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  setModelId(m.id);
+                                  localStorage.setItem('vibe_hatch_model_id', m.id);
+                                  setIsModelDropdownOpen(false);
+                                }}
+                                className={`w-full px-3 py-1.5 text-left font-mono transition cursor-pointer flex items-center justify-between hover:bg-[var(--choice-hover)] ${
+                                  modelId === m.id 
+                                    ? 'text-emerald-500 font-bold bg-emerald-500/5' 
+                                    : 'text-zinc-400 hover:text-zinc-200'
+                                }`}
+                              >
+                                <span>{m.name}</span>
+                                {modelId === m.id && <span>✓</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <button
                       type="button"
                       disabled={isLoading || !chatInput.trim()}
@@ -1104,7 +1153,7 @@ export default function VibeHatchWizard() {
               {/* Chat Input Area (Conversation Mode) */}
               <div className="space-y-3 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
                 <div 
-                  className="w-full border rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2"
+                  className="w-full border rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2 items-center"
                   style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
                 >
                   <input
@@ -1121,16 +1170,67 @@ export default function VibeHatchWizard() {
                     }}
                     disabled={isLoading}
                   />
-                  <button
-                    type="button"
-                    disabled={isLoading || !chatInput.trim()}
-                    onClick={handleSendMessage}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 self-center ${
-                      theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
-                    }`}
-                  >
-                    ↑
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                        className="text-[9px] font-mono text-zinc-500 hover:text-zinc-300 uppercase font-semibold flex items-center gap-1 transition select-none cursor-pointer"
+                        title="Change LLM Model"
+                      >
+                        <span>{getActiveModelLabel()}</span>
+                        <span className="text-[7px] text-zinc-500/80">▼</span>
+                      </button>
+
+                      {isModelDropdownOpen && (
+                        <>
+                          {/* Invisible Click Backdrop */}
+                          <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={() => setIsModelDropdownOpen(false)}
+                          />
+                          {/* Dropdown Options Container */}
+                          <div 
+                            className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border shadow-xl z-50 py-1.5 animate-slide-in text-[10px] text-left"
+                            style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+                          >
+                            <div className="px-3 py-1 text-[8px] uppercase tracking-wider font-mono text-zinc-500 font-bold border-b mb-1" style={{ borderColor: 'var(--input-border)' }}>
+                              Select Engine
+                            </div>
+                            {(PROVIDER_MODELS[provider] || []).map((m) => (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  setModelId(m.id);
+                                  localStorage.setItem('vibe_hatch_model_id', m.id);
+                                  setIsModelDropdownOpen(false);
+                                }}
+                                className={`w-full px-3 py-1.5 text-left font-mono transition cursor-pointer flex items-center justify-between hover:bg-[var(--choice-hover)] ${
+                                  modelId === m.id 
+                                    ? 'text-emerald-500 font-bold bg-emerald-500/5' 
+                                    : 'text-zinc-400 hover:text-zinc-200'
+                                }`}
+                              >
+                                <span>{m.name}</span>
+                                {modelId === m.id && <span>✓</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isLoading || !chatInput.trim()}
+                      onClick={handleSendMessage}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 ${
+                        theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                      }`}
+                    >
+                      ↑
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
