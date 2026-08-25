@@ -356,19 +356,39 @@ export default function VibeHatchWizard() {
 
             {/* Heuristics requirements checks progress bar */}
             <div className="grid grid-cols-5 gap-1.5 p-2 rounded-xl mb-4 text-[10px] font-mono border" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${reqStatus.idea ? 'text-emerald-400 bg-emerald-500/5' : 'text-zinc-500'}`}>
+              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                reqStatus.idea 
+                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                  : 'text-zinc-500'
+              }`}>
                 <span>{reqStatus.idea ? '✓' : '○'}</span> <span className="truncate">Idea</span>
               </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${reqStatus.platform ? 'text-emerald-400 bg-emerald-500/5' : 'text-zinc-500'}`}>
+              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                reqStatus.platform 
+                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                  : 'text-zinc-500'
+              }`}>
                 <span>{reqStatus.platform ? '✓' : '○'}</span> <span className="truncate">Platform</span>
               </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${reqStatus.features ? 'text-emerald-400 bg-emerald-500/5' : 'text-zinc-500'}`}>
+              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                reqStatus.features 
+                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                  : 'text-zinc-500'
+              }`}>
                 <span>{reqStatus.features ? '✓' : '○'}</span> <span className="truncate">Features</span>
               </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${reqStatus.tech ? 'text-emerald-400 bg-emerald-500/5' : 'text-zinc-500'}`}>
+              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                reqStatus.tech 
+                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                  : 'text-zinc-500'
+              }`}>
                 <span>{reqStatus.tech ? '✓' : '○'}</span> <span className="truncate">Tech</span>
               </div>
-              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${reqStatus.storage ? 'text-emerald-400 bg-emerald-500/5' : 'text-zinc-500'}`}>
+              <div className={`flex items-center gap-1 justify-center py-1 rounded transition-colors ${
+                reqStatus.storage 
+                  ? (theme === 'dark' ? 'text-emerald-400 bg-emerald-500/5' : 'text-emerald-700 bg-emerald-500/10')
+                  : 'text-zinc-500'
+              }`}>
                 <span>{reqStatus.storage ? '✓' : '○'}</span> <span className="truncate">Storage</span>
               </div>
             </div>
@@ -383,14 +403,22 @@ export default function VibeHatchWizard() {
                   msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
                 }`}
               >
-                <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/5 border border-white/10 shrink-0 text-sm">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-sm border ${
+                  theme === 'dark' 
+                    ? 'bg-white/5 border-white/10 text-zinc-300' 
+                    : 'bg-slate-200 border-slate-300 text-slate-800'
+                }`}>
                   {msg.role === 'user' ? '👤' : '🤖'}
                 </div>
                 <div
-                  className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                  className={`p-3 rounded-2xl text-xs leading-relaxed border ${
                     msg.role === 'user'
-                      ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
-                      : 'bg-white/[0.03] text-zinc-300 border border-white/[0.05]'
+                      ? (theme === 'dark'
+                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                          : 'bg-emerald-100/80 text-emerald-950 border-emerald-300')
+                      : (theme === 'dark'
+                          ? 'bg-white/[0.03] text-zinc-300 border-white/[0.05]'
+                          : 'bg-slate-100/90 text-slate-900 border-slate-300')
                   }`}
                 >
                   {msg.content.replace('[READY_TO_HATCH]', '')}
@@ -399,13 +427,21 @@ export default function VibeHatchWizard() {
             ))}
             {isLoading && (
               <div className="flex gap-2.5 max-w-[80%] animate-pulse">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/5 border border-white/10 shrink-0 text-sm">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-sm border ${
+                  theme === 'dark' 
+                    ? 'bg-white/5 border-white/10' 
+                    : 'bg-slate-200 border-slate-300'
+                }`}>
                   🤖
                 </div>
-                <div className="p-3 bg-white/[0.03] text-zinc-500 rounded-2xl text-xs border border-white/[0.05] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.4s]"></span>
+                <div className={`p-3 rounded-2xl text-xs border flex items-center gap-1 ${
+                  theme === 'dark'
+                    ? 'bg-white/[0.03] text-zinc-500 border-white/[0.05]'
+                    : 'bg-slate-100/90 text-slate-500 border-slate-300'
+                }`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
                 </div>
               </div>
             )}
