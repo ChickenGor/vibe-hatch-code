@@ -1837,36 +1837,36 @@ export default function VibeHatchWizard() {
           />
           {/* Drawer Panel */}
           <div 
-            className="fixed top-0 right-0 h-full w-[90vw] sm:w-[500px] max-w-lg bg-zinc-900 border-l border-zinc-800 z-50 flex flex-col shadow-2xl transition-transform ease-out duration-300 translate-x-0 animate-slide-in"
+            className="fixed top-0 right-0 h-full w-[95vw] sm:w-[540px] md:w-[600px] max-w-2xl bg-zinc-900 border-l border-zinc-800 z-50 flex flex-col shadow-2xl transition-transform ease-out duration-300 translate-x-0 animate-slide-in"
             style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
           >
             {/* Header */}
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between" style={{ borderColor: 'var(--input-border)' }}>
+            <div className="p-4.5 border-b border-zinc-800 flex items-center justify-between" style={{ borderColor: 'var(--input-border)' }}>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-[var(--text-main)]">⚙️ Advanced Settings</span>
+                <span className="text-base font-bold text-[var(--text-main)]">⚙️ Advanced Settings</span>
               </div>
               <button 
                 onClick={() => setIsStackDrawerOpen(false)}
                 className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs text-left">
+            <div className="flex-1 overflow-y-auto p-4.5 space-y-6 text-sm text-left">
               {/* Tech Stack Matchmaker */}
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-zinc-200">🛠️ Tech Matchmaker</span>
-                  <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 font-bold">
+                  <span className="text-sm font-bold text-zinc-200">🛠️ Tech Matchmaker</span>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-450 font-bold">
                     {selectedStack.length} selected
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-400 leading-normal">
+                <p className="text-xs text-zinc-400 leading-normal">
                   Select technologies to automatically customize prompt templates and inject framework-specific configurations:
                 </p>
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   {TECH_OPTIONS.map(tech => {
                     const active = selectedStack.includes(tech.id);
                     return (
@@ -1880,14 +1880,14 @@ export default function VibeHatchWizard() {
                               : [...prev, tech.id]
                           );
                         }}
-                        className={`p-2 rounded-lg text-[9px] font-semibold text-left transition-all cursor-pointer border select-none flex flex-col gap-1 ${
+                        className={`p-3.5 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer border select-none flex flex-col gap-1.5 ${
                           active 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold' 
                             : 'bg-zinc-800/40 text-zinc-400 border-zinc-700/60 hover:border-zinc-500'
                         }`}
                       >
-                        <span className="font-bold">{tech.label}</span>
-                        <span className="text-[8px] text-zinc-500 leading-tight line-clamp-2 font-normal">{tech.desc}</span>
+                        <span className="font-bold text-[13px]">{tech.label}</span>
+                        <span className="text-[11px] text-zinc-550 leading-relaxed font-normal">{tech.desc}</span>
                       </button>
                     );
                   })}
@@ -1897,17 +1897,17 @@ export default function VibeHatchWizard() {
               <hr className="border-zinc-800/80" style={{ borderColor: 'var(--glass-border)' }} />
 
               {/* Red Team Audit */}
-              <div className="space-y-2.5">
-                <span className="font-bold text-zinc-200 block">🔒 Security & Performance</span>
-                <p className="text-[10px] text-zinc-400 leading-normal">
+              <div className="space-y-3">
+                <span className="text-sm font-bold text-zinc-200 block">🔒 Security & Performance</span>
+                <p className="text-xs text-zinc-400 leading-normal">
                   Toggle on-demand security auditing to scan code templates for vulnerabilities, database race conditions, and performance bottlenecks:
                 </p>
-                <label className="flex items-center gap-2.5 cursor-pointer text-zinc-300 hover:text-white select-none w-fit pt-1">
+                <label className="flex items-center gap-3 cursor-pointer text-zinc-300 hover:text-white select-none w-fit pt-1">
                   <input 
                     type="checkbox" 
                     checked={runRedTeam} 
                     onChange={(e) => setRunRedTeam(e.target.checked)} 
-                    className="accent-emerald-500 rounded cursor-pointer w-4 h-4"
+                    className="accent-emerald-500 rounded cursor-pointer w-5 h-5"
                   />
                   <span className="font-bold text-xs">Run Red-Team Security Audit</span>
                 </label>
@@ -1915,19 +1915,19 @@ export default function VibeHatchWizard() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-zinc-800 flex gap-2" style={{ borderColor: 'var(--input-border)' }}>
+            <div className="p-4 border-t border-zinc-800 flex gap-3.5" style={{ borderColor: 'var(--input-border)' }}>
               <button
                 onClick={() => {
                   setSelectedStack([]);
                   setRunRedTeam(false);
                 }}
-                className="flex-1 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 transition cursor-pointer font-bold text-[10px]"
+                className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 transition cursor-pointer font-bold text-xs"
               >
                 Reset All
               </button>
               <button
                 onClick={() => setIsStackDrawerOpen(false)}
-                className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black transition cursor-pointer font-bold text-[10px]"
+                className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black transition cursor-pointer font-bold text-xs"
               >
                 Apply Settings
               </button>
