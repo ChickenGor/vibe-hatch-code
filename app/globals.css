@@ -76,9 +76,9 @@ body {
 /* Light Mode Overrides (Project Viper Light) */
 .light-mode {
   --bg-main: #ffffff !important;
-  --text-main: #0f172a !important;
-  --text-muted: #475569 !important;
-  --text-dim: #94a3b8 !important;
+  --text-main: #000000 !important;
+  --text-muted: #000000 !important;
+  --text-dim: #000000 !important;
   --glass-bg: #fcfcfc !important;
   --glass-border: #f2f2f4 !important;
   --glass-highlight: #ffffff !important;
@@ -88,9 +88,17 @@ body {
   --input-focus: rgba(175, 234, 147, 0.5) !important;
   --choice-bg: #fafafb !important;
   --choice-hover: #f3f3f5 !important;
-  --code-bg: #0f172a !important;
+  --code-bg: #f8f8fa !important;
   --orb-1: rgba(175, 234, 147, 0.02) !important;
   --orb-2: rgba(241, 245, 249, 0.03) !important;
+}
+
+/* Force all text-zinc, text-slate, text-gray and text-neutral utility colors to black in light mode */
+.light-mode [class*="text-zinc-"],
+.light-mode [class*="text-slate-"],
+.light-mode [class*="text-gray-"],
+.light-mode [class*="text-neutral-"] {
+  color: #000000 !important;
 }
 
 
