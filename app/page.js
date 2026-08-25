@@ -849,126 +849,152 @@ export default function VibeHatchWizard() {
       {/* 3. COLLAPSIBLE RIGHT PREVIEW PANEL */}
       <section
         className={`border-l flex flex-col h-screen shrink-0 transition-all duration-300 ease-in-out relative ${
-          isPreviewOpen && versions.length > 0 ? 'w-[450px] opacity-100' : 'w-0 opacity-0 overflow-hidden border-l-0'
+          isPreviewOpen ? 'w-[450px] opacity-100' : 'w-0 opacity-0 overflow-hidden border-l-0'
         }`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
       >
         <div className="p-4 flex flex-col h-full justify-between">
           
-          {/* Controls bar */}
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--glass-border)' }}>
-              {/* Output format selectors */}
-              <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-                <button
-                  onClick={() => setOutputFormat('standard')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                    Standard
-                  </span>
-                </button>
-                <button
-                  onClick={() => setOutputFormat('cursorrules')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    .cursorrules
-                  </span>
-                </button>
-              </div>
-
-              {/* Checkpoints */}
-              {versions.length > 1 && (
-                <div className="flex items-center gap-1 p-1 rounded-xl border text-[9px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-                  {versions.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentVersionIdx(idx)}
-                      className={`px-1.5 py-0.5 rounded font-mono font-bold transition ${currentVersionIdx === idx ? 'bg-emerald-500 text-white' : 'text-zinc-400'}`}
-                    >
-                      v{idx + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Actions: Copy & Download */}
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">Compiled Output</span>
-              <div className="flex items-center gap-1.5">
-                <button onClick={downloadMarkdown} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
-                  Download
-                </button>
-                <button onClick={copyToClipboard} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
-                  {copied ? "Copied! ✓" : "Copy"}
-                </button>
-              </div>
-            </div>
-
-            {/* Token savings statistics */}
-            <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
-              <div>
-                <span className="text-emerald-500 font-semibold inline-flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="fill-emerald-500 stroke-none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  ~{stats?.saved?.toLocaleString()} Tokens Optimized
-                </span>
-                <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
-              </div>
-              <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                v{currentVersionIdx + 1}
-              </span>
-            </div>
-          </div>
-
-          {/* Compiled Output Viewbox */}
-          <div className="flex-1 rounded-xl p-3 font-mono text-[10px] text-emerald-400 overflow-y-auto border border-white/[0.08] whitespace-pre-wrap leading-relaxed select-all shadow-inner relative" style={{ backgroundColor: 'var(--code-bg)' }}>
-            {isCompiling ? (
-              <div className="space-y-4 animate-pulse p-2 font-sans select-none">
-                <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 w-fit">
-                  <span className="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10c0 2-3 3-3 3"/></svg>
-                    Archiving & generating prompt template...
-                  </span>
-                </div>
-                <div className="space-y-2 pt-2">
-                  <div className="h-2 bg-white/[0.1] rounded w-1/4 mb-3"></div>
-                  <div className="h-1.5 bg-white/[0.05] rounded w-3/4"></div>
-                  <div className="h-1.5 bg-white/[0.05] rounded w-1/2"></div>
-                </div>
-              </div>
-            ) : (
-              currentPromptContent
-            )}
-          </div>
-
-          {/* Continuous Prompt Refinements input */}
-          <div className="space-y-2 pt-3 border-t shrink-0" style={{ borderColor: 'var(--glass-border)' }}>
-            <span className="text-[8px] uppercase font-mono tracking-wider font-semibold flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Adjust Prompt Constraints
-            </span>
-            <form onSubmit={handleRefinePrompt} className="flex gap-1.5">
-              <input
-                type="text"
-                className="liquid-input text-[11px] !p-1.5"
-                placeholder="Request prompt edits (e.g. Add Zod schemas)..."
-                value={refinementInput}
-                onChange={(e) => setRefinementInput(e.target.value)}
-                disabled={isCompiling}
-              />
-              <button
-                type="submit"
-                disabled={isCompiling || !refinementInput.trim()}
-                className="liquid-btn-primary text-xs !py-1.5 !px-3 shrink-0 shadow-md"
+          {versions.length === 0 && !isCompiling ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6 my-auto select-none">
+              <div 
+                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border relative"
+                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
               >
-                {isCompiling ? '...' : 'Refine'}
-              </button>
-            </form>
-          </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-black tracking-tight text-emerald-500">Prompt Output Chamber</h4>
+                <p className="text-[11px] max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  Your compiled developer instructions, directory blueprints, and tech stack constraints will manifest here.
+                </p>
+              </div>
+              <div className="text-[10px] font-mono p-3 rounded-lg border border-dashed text-zinc-500" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
+                💡 Click "Hatch Developer Prompt" once requirements gathering is complete!
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Controls bar */}
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--glass-border)' }}>
+                  {/* Output format selectors */}
+                  <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                    <button
+                      onClick={() => setOutputFormat('standard')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                        Standard
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setOutputFormat('cursorrules')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        .cursorrules
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Checkpoints */}
+                  {versions.length > 1 && (
+                    <div className="flex items-center gap-1 p-1 rounded-xl border text-[9px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                      {versions.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentVersionIdx(idx)}
+                          className={`px-1.5 py-0.5 rounded font-mono font-bold transition ${currentVersionIdx === idx ? 'bg-emerald-500 text-white' : 'text-zinc-400'}`}
+                        >
+                          v{idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions: Copy & Download */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">Compiled Output</span>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={downloadMarkdown} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                      Download
+                    </button>
+                    <button onClick={copyToClipboard} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                      {copied ? "Copied! ✓" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Token savings statistics */}
+                <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+                  <div>
+                    <span className="text-emerald-500 font-semibold inline-flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="fill-emerald-500 stroke-none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      ~{stats?.saved?.toLocaleString()} Tokens Optimized
+                    </span>
+                    <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
+                  </div>
+                  <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                    v{currentVersionIdx + 1}
+                  </span>
+                </div>
+              </div>
+
+              {/* Compiled Output Viewbox */}
+              <div className="flex-1 rounded-xl p-3 font-mono text-[10px] text-emerald-400 overflow-y-auto border border-white/[0.08] whitespace-pre-wrap leading-relaxed select-all shadow-inner relative" style={{ backgroundColor: 'var(--code-bg)' }}>
+                {isCompiling ? (
+                  <div className="space-y-4 animate-pulse p-2 font-sans select-none">
+                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 w-fit">
+                      <span className="flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10c0 2-3 3-3 3"/></svg>
+                        Archiving & generating prompt template...
+                      </span>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <div className="h-2 bg-white/[0.1] rounded w-1/4 mb-3"></div>
+                      <div className="h-1.5 bg-white/[0.05] rounded w-3/4"></div>
+                      <div className="h-1.5 bg-white/[0.05] rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ) : (
+                  currentPromptContent
+                )}
+              </div>
+
+              {/* Continuous Prompt Refinements input */}
+              <div className="space-y-2 pt-3 border-t shrink-0" style={{ borderColor: 'var(--glass-border)' }}>
+                <span className="text-[8px] uppercase font-mono tracking-wider font-semibold flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Adjust Prompt Constraints
+                </span>
+                <form onSubmit={handleRefinePrompt} className="flex gap-1.5">
+                  <input
+                    type="text"
+                    className="liquid-input text-[11px] !p-1.5"
+                    placeholder="Request prompt edits (e.g. Add Zod schemas)..."
+                    value={refinementInput}
+                    onChange={(e) => setRefinementInput(e.target.value)}
+                    disabled={isCompiling}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isCompiling || !refinementInput.trim()}
+                    className="liquid-btn-primary text-xs !py-1.5 !px-3 shrink-0 shadow-md"
+                  >
+                    {isCompiling ? '...' : 'Refine'}
+                  </button>
+                </form>
+              </div>
+            </>
+          )}
 
         </div>
       </section>
