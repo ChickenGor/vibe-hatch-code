@@ -383,7 +383,9 @@ export default function VibeHatchWizard() {
         
         {/* Warning banner centered at top */}
         <div className="pt-4 px-4 flex justify-center shrink-0">
-          <div className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0">
+          <div className={`bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0 ${
+            theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'
+          }`}>
             <span>💚</span>
             <span className="truncate">Vibe Hatch AI can make mistakes. Verify important prompt outputs.</span>
           </div>
@@ -405,7 +407,10 @@ export default function VibeHatchWizard() {
               </div>
 
               {/* Centered chat bar */}
-              <div className="w-full bg-zinc-50 dark:bg-[#1a1a1c] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left">
+              <div 
+                className="w-full border rounded-2xl p-3 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left"
+                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
+              >
                 <textarea
                   className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] resize-none h-16 placeholder-zinc-400 pr-8"
                   placeholder="Describe your app idea (e.g. A lo-fi desktop timer)..."
@@ -420,12 +425,24 @@ export default function VibeHatchWizard() {
                   disabled={isLoading}
                   autoFocus
                 />
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 mt-2">
+                <div 
+                  className="flex items-center justify-between pt-2 border-t mt-2"
+                  style={{ borderColor: 'var(--glass-border)' }}
+                >
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => setIsModalOpen(true)} className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 transition" title="API Configuration">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsModalOpen(true)} 
+                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)]" 
+                      title="API Configuration"
+                    >
                       ⚙️
                     </button>
-                    <button type="button" className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 transition" title="Prompt Parameters">
+                    <button 
+                      type="button" 
+                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)]" 
+                      title="Prompt Parameters"
+                    >
                       ✨
                     </button>
                   </div>
@@ -435,7 +452,9 @@ export default function VibeHatchWizard() {
                       type="button"
                       disabled={isLoading || !chatInput.trim()}
                       onClick={handleSendMessage}
-                      className="w-7 h-7 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition"
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition ${
+                        theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                      }`}
                     >
                       ↑
                     </button>
@@ -531,7 +550,10 @@ export default function VibeHatchWizard() {
 
               {/* Chat Input Area (Conversation Mode) */}
               <div className="space-y-3 pt-3 border-t shrink-0" style={{ borderColor: 'var(--input-border)' }}>
-                <div className="w-full bg-zinc-50 dark:bg-[#1a1a1c] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2">
+                <div 
+                  className="w-full border rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2"
+                  style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
+                >
                   <input
                     type="text"
                     className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] placeholder-zinc-400 px-1 py-1"
@@ -550,7 +572,9 @@ export default function VibeHatchWizard() {
                     type="button"
                     disabled={isLoading || !chatInput.trim()}
                     onClick={handleSendMessage}
-                    className="w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 self-center"
+                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 self-center ${
+                      theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                    }`}
                   >
                     ↑
                   </button>
