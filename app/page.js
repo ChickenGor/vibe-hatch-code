@@ -2,30 +2,228 @@
 import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
+const SvgIcon = ({ name, className = "w-3.5 h-3.5 inline-block shrink-0" }) => {
+  switch (name) {
+    case 'gear':
+    case 'settings':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      );
+    case 'tech':
+    case 'wrench':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      );
+    case 'lock':
+    case 'security':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      );
+    case 'folder':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>
+        </svg>
+      );
+    case 'file':
+    case 'document':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      );
+    case 'coffee':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+          <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>
+          <line x1="6" x2="6" y1="2" y2="4"/>
+          <line x1="10" x2="10" y1="2" y2="4"/>
+          <line x1="14" x2="14" y1="2" y2="4"/>
+        </svg>
+      );
+    case 'sun':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+      );
+    case 'moon':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+      );
+    case 'lightbulb':
+    case 'idea':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+          <path d="M9 18h6M10 22h4"/>
+        </svg>
+      );
+    case 'warning':
+    case 'alert':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <line x1="12" x2="12" y1="9" y2="13"/>
+          <line x1="12" x2="12.01" y1="17" y2="17"/>
+        </svg>
+      );
+    case 'bolt':
+    case 'lightning':
+    case 'saas':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      );
+    case 'puzzle':
+    case 'extension':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22v-4h3a2 2 0 0 0 2-2v-3h4v-3h-4V7a2 2 0 0 0-2-2h-3V1h-3v4H7a2 2 0 0 0-2 2v3H1v3h4v3a2 2 0 0 0 2 2h3v4z"/>
+        </svg>
+      );
+    case 'phone':
+    case 'mobile':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+          <line x1="12" x2="12.01" y1="18" y2="18"/>
+        </svg>
+      );
+    case 'robot':
+    case 'chatbot':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <circle cx="12" cy="5" r="2"/>
+          <path d="M12 7v4M8 16h8M6 14h.01M18 14h.01"/>
+        </svg>
+      );
+    case 'key':
+    case 'oauth':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+        </svg>
+      );
+    case 'credit-card':
+    case 'stripe':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="14" x="2" y="5" rx="2"/>
+          <line x1="2" x2="22" y1="10" y2="10"/>
+        </svg>
+      );
+    case 'chart':
+    case 'csv':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" x2="18" y1="20" y2="10"/>
+          <line x1="12" x2="12" y1="20" y2="4"/>
+          <line x1="6" x2="6" y1="20" y2="14"/>
+        </svg>
+      );
+    case 'ban':
+    case 'error':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/>
+        </svg>
+      );
+    case 'hourglass':
+    case 'leak':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 2h14M5 22h14M19 2v4c0 1.38-1.13 2.5-2.5 3.5L12 14l-4.5-4.5C6.13 8.5 5 7.38 5 6V2zm0 20v-4c0-1.38-1.13-2.5-2.5-3.5L12 14l-4.5 4.5C6.13 15.5 5 16.62 5 18v4z"/>
+        </svg>
+      );
+    case 'loop':
+    case 'infinite':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m17 2 4 4-4 4"/>
+          <path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/>
+          <path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+        </svg>
+      );
+    case 'palette':
+    case 'theme':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.38577 19.5228 5.48512 20.3703 5.09341 21C4.7017 21.6297 3.8217 21.8488 3.192 21.4571C1.8217 20.6053 1 19.1415 1 17.5C1 15.567 2.567 14 4.5 14H6V11C6 7.68629 8.68629 5 12 5C15.3137 5 18 7.68629 18 11V14H19.5C21.433 14 23 15.567 23 17.5C23 19.1415 22.1783 20.6053 20.808 21.4571C20.1783 21.8488 19.2983 21.6297 18.9066 21C18.5149 20.3703 18.6142 19.5228 18.9066 21C18.5149 20.3703 18.6142 19.5228 19.1414 19C20.9097 17.1962 22 14.7255 22 12M12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20Z"/>
+          <circle cx="7.5" cy="10.5" r="1"/>
+          <circle cx="11.5" cy="7.5" r="1"/>
+          <circle cx="16.5" cy="9.5" r="1"/>
+        </svg>
+      );
+    case 'wind':
+    case 'tailwind':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+        </svg>
+      );
+    case 'broom':
+    case 'clean':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 3 3 18M21 6l-3-3M19 8l-3-3M17 10l-3-3M15 12l-3-3M13 14l-3-3M11 16l-3-3M6.5 15.5l3 3M8.5 17.5l-2 2a2 2 0 0 1-2.83 0l-.34-.34a2 2 0 0 1 0-2.83l2-2"/>
+        </svg>
+      );
+    case 'reset':
+    case 'refresh':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M16 3h5v5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 21H3v-5"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
 const STARTER_BLUEPRINTS = {
   new_app: [
-    { label: "⚡ Web SaaS App", prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication." },
-    { label: "🧩 Chrome Extension", prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI." },
-    { label: "📱 Habit Tracker", prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence." },
-    { label: "🤖 PDF Chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
+    { label: "Web SaaS App", icon: "saas", prompt: "I want to build a modern Web SaaS dashboard app with Stripe payments and authentication." },
+    { label: "Chrome Extension", icon: "extension", prompt: "I want to create a lightweight Chrome Extension that summarizes web page text using AI." },
+    { label: "Habit Tracker", icon: "mobile", prompt: "I want to develop a mobile-friendly habit tracking app with offline local persistence." },
+    { label: "PDF Chatbot", icon: "chatbot", prompt: "I want to build a custom PDF Chatbot where users upload documents and ask questions." }
   ],
   add_feature: [
-    { label: "🔑 Add OAuth Login", prompt: "I want to add NextAuth Google OAuth login support to my existing React project." },
-    { label: "💳 Integrate Stripe", prompt: "I want to implement Stripe Checkout billing redirect sessions inside my payment router." },
-    { label: "📝 Markdown Editor", prompt: "I want to add a rich markdown text editor component with code preview highlighting." },
-    { label: "📊 Export to CSV", prompt: "I want to implement a data export utility that converts tables to CSV/Excel reports." }
+    { label: "Add OAuth Login", icon: "oauth", prompt: "I want to add NextAuth Google OAuth login support to my existing React project." },
+    { label: "Integrate Stripe", icon: "stripe", prompt: "I want to implement Stripe Checkout billing redirect sessions inside my payment router." },
+    { label: "Markdown Editor", icon: "document", prompt: "I want to add a rich markdown text editor component with code preview highlighting." },
+    { label: "Export to CSV", icon: "csv", prompt: "I want to implement a data export utility that converts tables to CSV/Excel reports." }
   ],
   solve_problem: [
-    { label: "🚫 API Error 500", prompt: "My Next.js API route returns an internal server 500 error when receiving database requests. Help me debug it." },
-    { label: "🧩 Hydration Mismatch", prompt: "I am getting a React Hydration Mismatch error inside my Next.js client component layout. How do I fix it?" },
-    { label: "⏳ Memory Leak", prompt: "My long-running Node background server keeps increasing in memory consumption. Help me trace the leak." },
-    { label: "🔁 Infinite Loop", prompt: "My React useEffect hook is causing an infinite state update loop when fetching remote datasets." }
+    { label: "API Error 500", icon: "error", prompt: "My Next.js API route returns an internal server 500 error when receiving database requests. Help me debug it." },
+    { label: "Hydration Mismatch", icon: "extension", prompt: "I am getting a React Hydration Mismatch error inside my Next.js client component layout. How do I fix it??" },
+    { label: "Memory Leak", icon: "leak", prompt: "My long-running Node background server keeps increasing in memory consumption. Help me trace the leak." },
+    { label: "Infinite Loop", icon: "infinite", prompt: "My React useEffect hook is causing an infinite state update loop when fetching remote datasets." }
   ],
   refactor_redesign: [
-    { label: "🎨 Obsidian Void Theme", prompt: "Help me refactor my app styles to implement an Obsidian Void deep space layout theme with thin glass borders." },
-    { label: "💨 Convert to Tailwind", prompt: "I want to migrate my old CSS modules style layout sheets to modern utility Tailwind classes." },
-    { label: "📱 Mobile UX Audit", prompt: "My layout shifts and overflows on mobile viewports. Help me audit and optimize it for clean mobile grids." },
-    { label: "🧹 Clean UI Layout", prompt: "Help me refactor my dense sidebar components to use clean hover groups and lucide SVG icons." }
+    { label: "Obsidian Void Theme", icon: "theme", prompt: "Help me refactor my app styles to implement an Obsidian Void deep space layout theme with thin glass borders." },
+    { label: "Convert to Tailwind", icon: "tailwind", prompt: "I want to migrate my old CSS modules style layout sheets to modern utility Tailwind classes." },
+    { label: "Mobile UX Audit", icon: "mobile", prompt: "My layout shifts and overflows on mobile viewports. Help me audit and optimize it for clean mobile grids." },
+    { label: "Clean UI Layout", icon: "clean", prompt: "Help me refactor my dense sidebar components to use clean hover groups and lucide SVG icons." }
   ]
 };
 
@@ -92,7 +290,10 @@ const FileNode = ({ node, onSelectFile, selectedFile, openFolders, toggleFolder 
           className="flex items-center gap-1.5 py-1 text-xs text-zinc-400 hover:text-white transition w-full text-left font-mono cursor-pointer"
         >
           <span className="text-[9px] text-zinc-500">{isOpen ? '▼' : '▶'}</span>
-          <span>📁 {node.name}</span>
+          <span className="flex items-center gap-1.5">
+            <SvgIcon name="folder" className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+            <span>{node.name}</span>
+          </span>
         </button>
         {isOpen && (
           <div className="border-l border-zinc-800 ml-1.5 pl-1.5 space-y-0.5">
@@ -122,7 +323,10 @@ const FileNode = ({ node, onSelectFile, selectedFile, openFolders, toggleFolder 
           : 'text-zinc-500 hover:text-zinc-300'
       }`}
     >
-      <span>📄 {node.name}</span>
+      <span className="flex items-center gap-1.5 truncate">
+        <SvgIcon name="file" className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+        <span>{node.name}</span>
+      </span>
     </button>
   );
 };
@@ -893,7 +1097,10 @@ export default function VibeHatchWizard() {
             style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
           >
             <span>Appearance</span>
-            <span className="text-[10px]">{theme === 'dark' ? '☀️ Opal' : '🌙 Void'}</span>
+            <span className="text-[10px] flex items-center gap-1">
+              <SvgIcon name={theme === 'dark' ? 'sun' : 'moon'} className="w-3 h-3 text-[var(--text-main)] shrink-0" />
+              <span>{theme === 'dark' ? 'Opal' : 'Void'}</span>
+            </span>
           </button>
 
           {/* Creator Portfolio & Buy Me a Coffee Links */}
@@ -915,7 +1122,7 @@ export default function VibeHatchWizard() {
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all duration-200 bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] cursor-pointer w-full justify-center text-[10px]"
             >
-              <span>☕</span>
+              <SvgIcon name="coffee" className="w-3.5 h-3.5 shrink-0" />
               <span>Buy me a coffee</span>
             </a>
           </div>
@@ -995,7 +1202,10 @@ export default function VibeHatchWizard() {
               onClick={() => setIsStackDrawerOpen(true)}
               className="flex items-center gap-1.5 hover:text-emerald-400 text-zinc-400 font-semibold cursor-pointer select-none py-1.5"
             >
-              <span>⚙️ Advanced Settings</span>
+              <span className="flex items-center gap-1.5">
+                <SvgIcon name="settings" className="w-3.5 h-3.5 shrink-0" />
+                <span>Advanced Settings</span>
+              </span>
               {(selectedStack.length > 0 || runRedTeam) && (
                 <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold ml-1">
                   {selectedStack.length > 0 ? `${selectedStack.length} stack` : ''}
@@ -1015,7 +1225,10 @@ export default function VibeHatchWizard() {
                 className="text-zinc-500 hover:text-rose-400 transition cursor-pointer select-none font-medium flex items-center gap-1 py-1.5"
                 title="Reset all settings to default"
               >
-                <span>↺ Reset All</span>
+                <span className="flex items-center gap-1">
+                  <SvgIcon name="reset" className="w-3 h-3 shrink-0" />
+                  <span>Reset All</span>
+                </span>
               </button>
             )}
           </div>
@@ -1156,10 +1369,11 @@ export default function VibeHatchWizard() {
                   <button
                     key={bp.label}
                     onClick={() => handleSendMessage(null, bp.prompt)}
-                    className="px-3 py-1.5 rounded-lg border text-[10px] transition cursor-pointer hover:border-emerald-500/50 hover:text-emerald-500"
+                    className="px-3 py-1.5 rounded-lg border text-[10px] transition cursor-pointer hover:border-emerald-500/50 hover:text-emerald-500 flex items-center gap-1.5"
                     style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}
                   >
-                    {bp.label}
+                    <SvgIcon name={bp.icon} className="w-3 h-3 shrink-0" />
+                    <span>{bp.label}</span>
                   </button>
                 ))}
               </div>
@@ -1408,8 +1622,9 @@ export default function VibeHatchWizard() {
                   Your compiled developer instructions, directory blueprints, and tech stack constraints will manifest here.
                 </p>
               </div>
-              <div className="text-[10px] font-mono p-3 rounded-lg border border-dashed text-zinc-500" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
-                💡 Click "Hatch Developer Prompt" once requirements gathering is complete!
+              <div className="text-[10px] font-mono p-3 rounded-lg border border-dashed text-zinc-500 flex items-start gap-1.5" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
+                <SvgIcon name="idea" className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <span>Click "Hatch Developer Prompt" once requirements gathering is complete!</span>
               </div>
             </div>
           ) : (
@@ -1424,7 +1639,10 @@ export default function VibeHatchWizard() {
                         onClick={() => setActivePreviewTab('spec')}
                         className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${activePreviewTab === 'spec' ? 'tab-active' : 'tab-inactive'}`}
                       >
-                        📝 Spec Sheet
+                        <span className="flex items-center gap-1">
+                          <SvgIcon name="document" className="w-3 h-3 shrink-0" />
+                          <span>Spec Sheet</span>
+                        </span>
                       </button>
                       <button
                         onClick={() => {
@@ -1433,7 +1651,10 @@ export default function VibeHatchWizard() {
                         }}
                         className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${activePreviewTab === 'workspace' ? 'tab-active' : 'tab-inactive'}`}
                       >
-                        📁 File Explorer
+                        <span className="flex items-center gap-1">
+                          <SvgIcon name="folder" className="w-3 h-3 shrink-0" />
+                          <span>File Explorer</span>
+                        </span>
                       </button>
                     </div>
 
@@ -1540,7 +1761,7 @@ export default function VibeHatchWizard() {
                       if (!validation.isValid) {
                         return (
                           <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 my-auto select-none font-sans">
-                            <span className="text-2xl text-rose-500">⚠️</span>
+                            <SvgIcon name="warning" className="w-8 h-8 text-rose-500 shrink-0" />
                             <h5 className="text-[11px] font-bold text-zinc-350">Workspace Construction Failed</h5>
                             <p className="text-[10px] max-w-xs text-zinc-500 leading-normal">
                               We detected malformed codebase tags in the generated prompt, making it impossible to render the file tree:
@@ -1555,7 +1776,7 @@ export default function VibeHatchWizard() {
                       }
                       return (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 my-auto select-none font-sans">
-                          <span className="text-2xl">📁</span>
+                          <SvgIcon name="folder" className="w-8 h-8 text-zinc-400 shrink-0" />
                           <h5 className="text-[11px] font-bold text-zinc-300">Workspace is Ephemeral</h5>
                           <p className="text-[10px] max-w-xs text-zinc-500 leading-normal">
                             No codebase components or files were structured in this checkpoint. Switch tab back to Spec Sheet or request a code feature.
@@ -1601,8 +1822,9 @@ export default function VibeHatchWizard() {
                       <div className="flex-1 flex flex-col h-full text-left font-sans select-none animate-fade-in">
                         {!validation.isValid && (
                           <div className="mb-3 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-lg text-[9px] text-amber-400 font-sans leading-normal">
-                            <div className="font-bold flex items-center gap-1 mb-1">
-                              <span>⚠️ Codebase Parsing Issues Detected</span>
+                            <div className="font-bold flex items-center gap-1.5 mb-1">
+                              <SvgIcon name="warning" className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>Codebase Parsing Issues Detected</span>
                             </div>
                             <ul className="list-disc list-inside font-mono text-[8px] space-y-0.5 opacity-90">
                               {validation.errors.map((err, idx) => (
@@ -1624,8 +1846,9 @@ export default function VibeHatchWizard() {
                             />
                           ))}
                         </div>
-                        <div className="mt-3 p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/40 text-[9px] text-zinc-500 leading-normal">
-                          💡 Click on directories to expand folders, or files to inspect/copy codebase segments.
+                        <div className="mt-3 p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/40 text-[9px] text-zinc-500 leading-normal flex items-start gap-1.5">
+                          <SvgIcon name="idea" className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                          <span>Click on directories to expand folders, or files to inspect/copy codebase segments.</span>
                         </div>
                       </div>
                     );
@@ -1963,7 +2186,10 @@ export default function VibeHatchWizard() {
             {/* Header */}
             <div className="p-4.5 border-b border-zinc-800 flex items-center justify-between" style={{ borderColor: 'var(--input-border)' }}>
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-[var(--text-main)]">⚙️ Advanced Settings</span>
+                <span className="text-base font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <SvgIcon name="settings" className="w-4 h-4 text-[var(--text-main)] shrink-0" />
+                  <span>Advanced Settings</span>
+                </span>
               </div>
               <button 
                 onClick={() => setIsStackDrawerOpen(false)}
@@ -1978,7 +2204,10 @@ export default function VibeHatchWizard() {
               {/* Tech Stack Matchmaker */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[var(--text-main)]">🛠️ Tech Matchmaker</span>
+                  <span className="text-sm font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                    <SvgIcon name="wrench" className="w-3.5 h-3.5 text-[var(--text-main)] shrink-0" />
+                    <span>Tech Matchmaker</span>
+                  </span>
                   <span className={`font-mono text-[10px] px-2 py-0.5 rounded font-bold ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-200/60 text-slate-600'}`}>
                     {selectedStack.length} selected
                   </span>
@@ -2022,7 +2251,10 @@ export default function VibeHatchWizard() {
 
               {/* Red Team Audit */}
               <div className="space-y-3">
-                <span className="text-sm font-bold text-[var(--text-main)] block">🔒 Security & Performance</span>
+                <span className="text-sm font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <SvgIcon name="lock" className="w-3.5 h-3.5 text-[var(--text-main)] shrink-0" />
+                  <span>Security & Performance</span>
+                </span>
                 <p className="text-xs text-[var(--text-muted)] leading-normal">
                   Toggle on-demand security auditing to scan code templates for vulnerabilities, database race conditions, and performance bottlenecks:
                 </p>
