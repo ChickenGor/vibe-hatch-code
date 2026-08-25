@@ -26,7 +26,7 @@ export default function VibeHatchWizard() {
 
   // Settings & Rate Limiting states
   const [provider, setProvider] = useState('google');
-  const [customKey, setCustomKey] = useState('');
+  const [customKeys, setCustomKeys] = useState({});
   const [tempKeyInput, setTempKeyInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionsLeft, setSessionsLeft] = useState(1);
@@ -63,11 +63,25 @@ export default function VibeHatchWizard() {
 
   // Theme & API key sync
   useEffect(() => {
-    const savedKey = localStorage.getItem('vibe_hatch_custom_api_key');
-    if (savedKey) {
-      setCustomKey(savedKey);
-      setTempKeyInput(savedKey);
+    const loadedKeys = {};
+    const providersList = ['google', 'anthropic', 'openai', 'groq', 'deepseek', 'grok', 'kimi', 'mistral', 'together', 'perplexity', 'ollama'];
+    providersList.forEach(p => {
+      const key = localStorage.getItem(`vibe_hatch_key_${p}`);
+      if (key) loadedKeys[p] = key;
+    });
+
+    // Migrate old single custom api key to google if present
+    const legacyKey = localStorage.getItem('vibe_hatch_custom_api_key');
+    if (legacyKey && !loadedKeys.google) {
+      loadedKeys.google = legacyKey;
+      localStorage.setItem('vibe_hatch_key_google', legacyKey);
     }
+
+    setCustomKeys(loadedKeys);
+    if (loadedKeys.google) {
+      setTempKeyInput(loadedKeys.google);
+    }
+
     const savedTheme = localStorage.getItem('vibe_hatch_theme') || 'dark';
     setTheme(savedTheme);
   }, []);
@@ -102,13 +116,18 @@ export default function VibeHatchWizard() {
 
   const handleSaveKey = (e) => {
     e.preventDefault();
-    if (tempKeyInput.trim() === '') {
-      localStorage.removeItem('vibe_hatch_custom_api_key');
-      setCustomKey('');
+    const trimmedInput = tempKeyInput.trim();
+    const updatedKeys = { ...customKeys };
+
+    if (trimmedInput === '') {
+      delete updatedKeys[provider];
+      localStorage.removeItem(`vibe_hatch_key_${provider}`);
     } else {
-      localStorage.setItem('vibe_hatch_custom_api_key', tempKeyInput.trim());
-      setCustomKey(tempKeyInput.trim());
+      updatedKeys[provider] = trimmedInput;
+      localStorage.setItem(`vibe_hatch_key_${provider}`, trimmedInput);
     }
+
+    setCustomKeys(updatedKeys);
     setIsModalOpen(false);
   };
 
@@ -147,7 +166,7 @@ export default function VibeHatchWizard() {
         body: JSON.stringify({
           conversation: updatedConversation,
           provider,
-          customApiKey: customKey || null
+          customApiKey: customKeys[provider] || null
         })
       });
 
@@ -168,7 +187,7 @@ export default function VibeHatchWizard() {
       return;
     }
 
-    if (!customKey && sessionsLeft <= 0) {
+    if (!customKeys[provider] && sessionsLeft <= 0) {
       setIsLimitModalOpen(true);
       return;
     }
@@ -185,7 +204,7 @@ export default function VibeHatchWizard() {
           conversation,
           outputFormat,
           provider,
-          customApiKey: customKey || null
+          customApiKey: customKeys[provider] || null
         })
       });
 
@@ -197,7 +216,7 @@ export default function VibeHatchWizard() {
       setVersions(newVersions);
       setCurrentVersionIdx(newVersions.length - 1);
 
-      if (!customKey) {
+      if (!customKeys[provider]) {
         const today = new Date().toISOString().split('T')[0];
         localStorage.setItem('vibe_hatch_limit', JSON.stringify({ date: today, used: 1 }));
         setSessionsLeft(0);
@@ -236,7 +255,7 @@ export default function VibeHatchWizard() {
           conversation: updatedConversation,
           outputFormat,
           provider,
-          customApiKey: customKey || null
+          customApiKey: customKeys[provider] || null
         })
       });
 
@@ -277,6 +296,23 @@ export default function VibeHatchWizard() {
       ollama: "Ollama (Local)"
     };
     return modelLabels[provider] || "AI Assistant";
+  };
+
+  const getApiKeyLink = () => {
+    const links = {
+      google: "https://aistudio.google.com/app/apikey",
+      anthropic: "https://console.anthropic.com/settings/keys",
+      openai: "https://platform.openai.com/api-keys",
+      groq: "https://console.groq.com/keys",
+      deepseek: "https://platform.deepseek.com/api_keys",
+      grok: "https://console.x.ai",
+      kimi: "https://platform.moonshot.cn/console/api-keys",
+      mistral: "https://console.mistral.ai/api-keys",
+      together: "https://api.together.ai/settings/api-keys",
+      perplexity: "https://www.perplexity.ai/settings/api",
+      ollama: "https://ollama.com"
+    };
+    return links[provider] || "#";
   };
 
   const currentPromptContent = versions[currentVersionIdx] || '';
@@ -735,7 +771,7 @@ export default function VibeHatchWizard() {
                 </h3>
               </div>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded font-semibold border" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
-                {customKey ? `${provider.toUpperCase()} Private Mode` : 'Shared Free Tier'}
+                {customKeys[provider] ? `${provider.toUpperCase()} Private Mode` : 'Shared Free Tier'}
               </span>
             </div>
 
@@ -762,7 +798,10 @@ export default function VibeHatchWizard() {
                 <button
                   key={prov.id}
                   type="button"
-                  onClick={() => setProvider(prov.id)}
+                  onClick={() => {
+                    setProvider(prov.id);
+                    setTempKeyInput(customKeys[prov.id] || '');
+                  }}
                   className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1 ${
                     provider === prov.id 
                       ? 'bg-emerald-500 text-white shadow-sm font-bold scale-[1.01]' 
@@ -785,12 +824,26 @@ export default function VibeHatchWizard() {
                   placeholder={
                     provider === 'google' ? "Paste key (e.g., AIzaSy...)" :
                       provider === 'anthropic' ? "Paste key (e.g., sk-ant-...)" :
-                        "Paste key (e.g., sk-...)"
+                        provider === 'ollama' ? "No key needed (Localhost)" :
+                          "Paste key (e.g., sk-...)"
                   }
-                  value={provider === 'ollama' ? "http://localhost:11434 (Auto-Connected)" : tempKeyInput}
+                  value={provider === 'ollama' ? "" : tempKeyInput}
                   onChange={(e) => setTempKeyInput(e.target.value)}
                   className="liquid-input font-mono text-xs"
                 />
+                
+                {provider !== 'ollama' && (
+                  <div className="text-[10px] pt-1.5 pl-0.5">
+                    <a 
+                      href={getApiKeyLink()} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-emerald-500 hover:text-emerald-400 font-semibold underline inline-flex items-center gap-1"
+                    >
+                      🔑 Get your {getActiveModelLabel()} API Key ↗
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
