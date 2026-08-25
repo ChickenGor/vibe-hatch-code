@@ -86,6 +86,7 @@ export default function VibeHatchWizard() {
   const [workspaces, setWorkspaces] = useState(["Main Workspace", "Client Spec Sheets", "Personal Sandbox"]);
   const [activeWorkspace, setActiveWorkspace] = useState("Main Workspace");
   const [isWorkspaceDropdownOpen, setIsWorkspaceDropdownOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Multi-Folder states
   const [folders, setFolders] = useState(["Web SaaS Specs", "Chrome Utilities", "Productivity Bots"]);
@@ -487,46 +488,59 @@ export default function VibeHatchWizard() {
     >
       {/* 1. LEFT SIDEBAR */}
       <aside
-        className="w-60 border-r flex flex-col justify-between p-4 shrink-0 transition-all duration-300 hidden md:flex"
+        className={`border-r flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out hidden md:flex relative ${
+          isSidebarOpen ? 'w-60 p-4 opacity-100' : 'w-0 p-0 opacity-0 overflow-hidden border-r-0'
+        }`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
       >
         <div>
           {/* Sidebar Top: Project Switcher */}
-          <div className="relative mb-6">
-            <button 
-              onClick={() => setIsWorkspaceDropdownOpen(prev => !prev)}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border text-left cursor-pointer hover:brightness-110 transition" 
-              style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
-            >
-              <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
-                <span className="text-xs font-black tracking-tight">{activeWorkspace}</span>
-              </div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 transition-transform duration-200" style={{ transform: isWorkspaceDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-            
-            {isWorkspaceDropdownOpen && (
-              <div 
-                className="absolute left-0 right-0 mt-1.5 rounded-xl border shadow-xl z-20 overflow-hidden text-xs py-1"
-                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="relative flex-1">
+              <button 
+                onClick={() => setIsWorkspaceDropdownOpen(prev => !prev)}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border text-left cursor-pointer hover:brightness-110 transition" 
+                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
               >
-                {workspaces.map((ws) => (
-                  <button
-                    key={ws}
-                    onClick={() => {
-                      setActiveWorkspace(ws);
-                      setIsWorkspaceDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2 hover:bg-[var(--choice-hover)] transition-all flex items-center justify-between cursor-pointer ${
-                      activeWorkspace === ws ? 'text-emerald-400 font-semibold' : 'text-zinc-400'
-                    }`}
-                  >
-                    <span>{ws}</span>
-                    {activeWorkspace === ws && <span className="text-[10px]">✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
+                  <span className="text-xs font-black tracking-tight truncate">{activeWorkspace}</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 shrink-0 transition-transform duration-200" style={{ transform: isWorkspaceDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              
+              {isWorkspaceDropdownOpen && (
+                <div 
+                  className="absolute left-0 right-0 mt-1.5 rounded-xl border shadow-xl z-20 overflow-hidden text-xs py-1"
+                  style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+                >
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws}
+                      onClick={() => {
+                        setActiveWorkspace(ws);
+                        setIsWorkspaceDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2 hover:bg-[var(--choice-hover)] transition-all flex items-center justify-between cursor-pointer ${
+                        activeWorkspace === ws ? 'text-emerald-400 font-semibold' : 'text-zinc-400'
+                      }`}
+                    >
+                      <span>{ws}</span>
+                      {activeWorkspace === ws && <span className="text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-2.5 rounded-xl border flex items-center justify-center text-zinc-400 hover:text-white transition cursor-pointer hover:bg-[var(--choice-hover)] shrink-0"
+              style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}
+              title="Collapse Sidebar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
           </div>
 
           {/* Navigation Menu */}
@@ -594,14 +608,50 @@ export default function VibeHatchWizard() {
             <span className="text-[10px]">{theme === 'dark' ? '☀️ Opal' : '🌙 Void'}</span>
           </button>
 
-          <span className="text-[9px] block text-center" style={{ color: 'var(--text-dim)' }}>
+          {/* Creator Portfolio & Buy Me a Coffee Links */}
+          <div className="space-y-2 pt-2.5 border-t text-[10px]" style={{ borderColor: 'var(--glass-border)' }}>
+            <a
+              href="https://chickengor.github.io/jimmy_wong/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between font-mono hover:text-emerald-400 transition-colors group cursor-pointer"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <span className="truncate">By <strong className="font-semibold" style={{ color: 'var(--text-main)' }}>ChickenRice Studio</strong></span>
+              <span className="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">↗</span>
+            </a>
+
+            <a
+              href="https://buymeacoffee.com/crdevstudio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all duration-200 bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] cursor-pointer w-full justify-center text-[10px]"
+            >
+              <span>☕</span>
+              <span>Buy me a coffee</span>
+            </a>
+          </div>
+
+          <span className="text-[9px] block text-center mt-1" style={{ color: 'var(--text-dim)' }}>
             © 2026 ChickenRice Studio
           </span>
         </div>
       </aside>
 
       {/* 2. MAIN CENTERED CHAT COLUMN */}
-      <main className="flex-1 flex flex-col justify-between min-w-0 bg-[var(--bg-main)]">
+      <main className="flex-1 flex flex-col justify-between min-w-0 bg-[var(--bg-main)] relative">
+        
+        {/* Sidebar Expand trigger (shows floating when sidebar is collapsed) */}
+        {!isSidebarOpen && (
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="absolute top-4 left-4 p-2.5 rounded-xl border flex items-center justify-center text-zinc-400 hover:text-white transition cursor-pointer hover:bg-[var(--choice-hover)] shadow-md z-30"
+            style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+            title="Expand Sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        )}
         
         {/* Warning banner centered at top */}
         <div className="pt-4 px-4 flex justify-center shrink-0">
