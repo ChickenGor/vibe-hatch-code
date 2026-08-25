@@ -262,6 +262,23 @@ export default function VibeHatchWizard() {
     return { compiled: compiledTokens, saved, dollars };
   };
 
+  const getActiveModelLabel = () => {
+    const modelLabels = {
+      google: "Gemini 3.6 Flash",
+      anthropic: "Claude 3.5 Sonnet",
+      openai: "GPT-4o",
+      groq: "Llama 3.3 (Groq)",
+      deepseek: "DeepSeek Chat",
+      grok: "Grok 2 (xAI)",
+      kimi: "Kimi k2.5",
+      mistral: "Codestral (Mistral)",
+      together: "Qwen 2.5 (Together)",
+      perplexity: "Sonar (Perplexity)",
+      ollama: "Ollama (Local)"
+    };
+    return modelLabels[provider] || "AI Assistant";
+  };
+
   const currentPromptContent = versions[currentVersionIdx] || '';
   const stats = calculateTokenStats(currentPromptContent);
 
@@ -413,7 +430,7 @@ export default function VibeHatchWizard() {
                     </button>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-mono text-zinc-500 uppercase">{provider} (Gemini 3.6)</span>
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase">{getActiveModelLabel()}</span>
                     <button
                       type="button"
                       disabled={isLoading || !chatInput.trim()}
@@ -704,17 +721,31 @@ export default function VibeHatchWizard() {
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border mb-4" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-              {['google', 'anthropic', 'openai', 'groq', 'deepseek', 'ollama'].map((prov) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-1.5 rounded-xl border mb-4" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+              {[
+                { id: 'google', name: 'Gemini' },
+                { id: 'anthropic', name: 'Claude' },
+                { id: 'openai', name: 'GPT-4o' },
+                { id: 'groq', name: 'Groq' },
+                { id: 'deepseek', name: 'DeepSeek' },
+                { id: 'grok', name: 'Grok 2' },
+                { id: 'kimi', name: 'Kimi' },
+                { id: 'mistral', name: 'Mistral' },
+                { id: 'together', name: 'Together' },
+                { id: 'perplexity', name: 'Perplexity' },
+                { id: 'ollama', name: 'Ollama' }
+              ].map((prov) => (
                 <button
-                  key={prov}
+                  key={prov.id}
                   type="button"
-                  onClick={() => setProvider(prov)}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition cursor-pointer capitalize flex items-center justify-center gap-1 ${
-                    provider === prov ? 'bg-emerald-500 text-white shadow-sm font-bold scale-[1.02]' : 'text-zinc-400 hover:text-white'
+                  onClick={() => setProvider(prov.id)}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1 ${
+                    provider === prov.id 
+                      ? 'bg-emerald-500 text-white shadow-sm font-bold scale-[1.01]' 
+                      : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  {prov}
+                  {prov.name}
                 </button>
               ))}
             </div>
