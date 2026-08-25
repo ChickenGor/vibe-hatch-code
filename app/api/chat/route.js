@@ -75,7 +75,10 @@ export async function POST(req) {
       customApiKey,
       userApiKey,
       provider = 'google',
-      modelId
+      modelId,
+      temperature = 0.7,
+      maxTokens,
+      systemNudge
     } = body;
 
     // Resolve API key
@@ -114,7 +117,7 @@ Ask exactly ONE clear, friendly question at a time to discover:
 5. Data Storage / Persistence (e.g. LocalStorage, Supabase, Cloud DB, Vector Memory)
 
 CRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.
-Once you have collected the user's needs, or if they ask to build/hatch the prompt directly, summarize what is collected and append the exact tag "[READY_TO_HATCH]" at the very end of your response.`;
+Once you have collected the user's needs, or if they ask to build/hatch the prompt directly, summarize what is collected and append the exact tag "[READY_TO_HATCH]" at the very end of your response.` + (systemNudge ? `\n\nCustom instruction override: ${systemNudge}` : '');
 
     // Token efficiency: send only the last 8 messages (4 turns) of the conversation to keep input context small
     const prunedConversation = conversation.slice(-8).map(msg => ({
@@ -126,7 +129,8 @@ Once you have collected the user's needs, or if they ask to build/hatch the prom
       model: model,
       system: systemInstruction,
       messages: prunedConversation,
-      temperature: 0.7,
+      temperature,
+      maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
     });
 
     return NextResponse.json({ result: text || 'Could not retrieve chatbot response.' });

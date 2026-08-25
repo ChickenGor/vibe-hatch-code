@@ -82,6 +82,42 @@ export default function VibeHatchWizard() {
   const [copied, setCopied] = useState(false);
   const [outputFormat, setOutputFormat] = useState('standard');
 
+  // Multi-Workspace states
+  const [workspaces, setWorkspaces] = useState(["Main Workspace", "Client Spec Sheets", "Personal Sandbox"]);
+  const [activeWorkspace, setActiveWorkspace] = useState("Main Workspace");
+  const [isWorkspaceDropdownOpen, setIsWorkspaceDropdownOpen] = useState(false);
+
+  // Multi-Folder states
+  const [folders, setFolders] = useState(["Web SaaS Specs", "Chrome Utilities", "Productivity Bots"]);
+  const [activeFolder, setActiveFolder] = useState("Web SaaS Specs");
+  const [folderChats, setFolderChats] = useState({
+    "Web SaaS Specs": [
+      { role: 'assistant', content: "Hi! Let's outline your Web SaaS app specifications. Tell me about your core concept!" }
+    ],
+    "Chrome Utilities": [
+      { role: 'assistant', content: "Hi! Let's build your Chrome Extension blueprint. Tell me what utility you want to build!" }
+    ],
+    "Productivity Bots": [
+      { role: 'assistant', content: "Hi! Ready to outline a custom productivity bot? What platform is it for (Discord, Slack, Telegram)?" }
+    ]
+  });
+  const [folderVersions, setFolderVersions] = useState({
+    "Web SaaS Specs": [],
+    "Chrome Utilities": [],
+    "Productivity Bots": []
+  });
+  const [folderVersionIdx, setFolderVersionIdx] = useState({
+    "Web SaaS Specs": -1,
+    "Chrome Utilities": -1,
+    "Productivity Bots": -1
+  });
+
+  // Prompt execution parameter states
+  const [temperature, setTemperature] = useState(0.2);
+  const [maxTokens, setMaxTokens] = useState(4000);
+  const [systemNudge, setSystemNudge] = useState("");
+  const [isParamsOpen, setIsParamsOpen] = useState(false);
+
   // UI state: Collapsible Prompt Preview Panel
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
 
@@ -164,6 +200,45 @@ export default function VibeHatchWizard() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation, isLoading]);
 
+  const switchFolder = (targetFolder) => {
+    // Save current active state
+    setFolderChats(prev => ({ ...prev, [activeFolder]: conversation }));
+    setFolderVersions(prev => ({ ...prev, [activeFolder]: versions }));
+    setFolderVersionIdx(prev => ({ ...prev, [activeFolder]: currentVersionIdx }));
+
+    // Load selected folder
+    setActiveFolder(targetFolder);
+    setConversation(folderChats[targetFolder] || [
+      { role: 'assistant', content: `Welcome to the folder: ${targetFolder}! Let's start the requirements gathering. Describe your app concept.` }
+    ]);
+    setVersions(folderVersions[targetFolder] || []);
+    setCurrentVersionIdx(folderVersionIdx[targetFolder] ?? -1);
+  };
+
+  const handleAddFolder = () => {
+    const name = prompt("Enter new folder name:");
+    if (name && name.trim()) {
+      const folderName = name.trim();
+      if (!folders.includes(folderName)) {
+        setFolders(prev => [...prev, folderName]);
+        setFolderChats(prev => ({
+          ...prev,
+          [folderName]: [
+            { role: 'assistant', content: `Welcome to your new folder: ${folderName}! Let's start the requirements gathering. Describe your app concept.` }
+          ]
+        }));
+        setFolderVersions(prev => ({
+          ...prev,
+          [folderName]: []
+        }));
+        setFolderVersionIdx(prev => ({
+          ...prev,
+          [folderName]: -1
+        }));
+      }
+    }
+  };
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -226,7 +301,10 @@ export default function VibeHatchWizard() {
           conversation: updatedConversation,
           provider,
           modelId,
-          customApiKey: customKeys[provider] || null
+          customApiKey: customKeys[provider] || null,
+          temperature,
+          maxTokens,
+          systemNudge
         })
       });
 
@@ -265,7 +343,10 @@ export default function VibeHatchWizard() {
           outputFormat,
           provider,
           modelId,
-          customApiKey: customKeys[provider] || null
+          customApiKey: customKeys[provider] || null,
+          temperature,
+          maxTokens,
+          systemNudge
         })
       });
 
@@ -317,7 +398,10 @@ export default function VibeHatchWizard() {
           outputFormat,
           provider,
           modelId,
-          customApiKey: customKeys[provider] || null
+          customApiKey: customKeys[provider] || null,
+          temperature,
+          maxTokens,
+          systemNudge
         })
       });
 
@@ -408,21 +492,50 @@ export default function VibeHatchWizard() {
       >
         <div>
           {/* Sidebar Top: Project Switcher */}
-          <div className="flex items-center justify-between p-2.5 rounded-xl border mb-6" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
-            <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
-              <span className="text-xs font-black tracking-tight">Vibe Hatch AI</span>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><path d="m6 9 6 6 6-6"/></svg>
+          <div className="relative mb-6">
+            <button 
+              onClick={() => setIsWorkspaceDropdownOpen(prev => !prev)}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border text-left cursor-pointer hover:brightness-110 transition" 
+              style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+            >
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
+                <span className="text-xs font-black tracking-tight">{activeWorkspace}</span>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 transition-transform duration-200" style={{ transform: isWorkspaceDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            
+            {isWorkspaceDropdownOpen && (
+              <div 
+                className="absolute left-0 right-0 mt-1.5 rounded-xl border shadow-xl z-20 overflow-hidden text-xs py-1"
+                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+              >
+                {workspaces.map((ws) => (
+                  <button
+                    key={ws}
+                    onClick={() => {
+                      setActiveWorkspace(ws);
+                      setIsWorkspaceDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 hover:bg-[var(--choice-hover)] transition-all flex items-center justify-between cursor-pointer ${
+                      activeWorkspace === ws ? 'text-emerald-400 font-semibold' : 'text-zinc-400'
+                    }`}
+                  >
+                    <span>{ws}</span>
+                    {activeWorkspace === ws && <span className="text-[10px]">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Navigation Menu */}
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #10b981' }}>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #10b981' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Chat Assistant</span>
             </button>
-            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:text-white transition-all">
+            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               <span>API Configuration</span>
             </button>
@@ -430,13 +543,30 @@ export default function VibeHatchWizard() {
 
           {/* Folder Groups */}
           <div className="mt-8 space-y-2">
-            <span className="text-[9px] uppercase font-mono tracking-wider font-bold block px-2" style={{ color: 'var(--text-dim)' }}>Saved Folders</span>
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[9px] uppercase font-mono tracking-wider font-bold block" style={{ color: 'var(--text-dim)' }}>Saved Folders</span>
+              <button 
+                onClick={handleAddFolder} 
+                className="text-xs text-zinc-500 hover:text-emerald-500 hover:scale-110 transition cursor-pointer font-bold" 
+                title="Create Folder"
+              >
+                +
+              </button>
+            </div>
             <div className="space-y-1 pl-2">
-              {["Web SaaS Specs", "Chrome Utilities", "Productivity Bots"].map((folder) => (
-                <div key={folder} className="text-xs py-1 hover:text-emerald-500 cursor-pointer truncate flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>
+              {folders.map((folder) => (
+                <button 
+                  key={folder} 
+                  onClick={() => switchFolder(folder)}
+                  className={`w-full text-left text-xs py-1.5 px-2 rounded-lg cursor-pointer truncate flex items-center gap-2 transition-all ${
+                    activeFolder === folder 
+                      ? 'bg-[var(--choice-hover)] text-emerald-400 font-bold border-l-2 border-emerald-500 pl-1.5' 
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={activeFolder === folder ? "text-emerald-400" : "text-zinc-500"}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>
                   <span className="truncate">{folder}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -532,6 +662,7 @@ export default function VibeHatchWizard() {
                     </button>
                     <button 
                       type="button" 
+                      onClick={() => setIsParamsOpen(true)}
                       className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)] flex items-center justify-center" 
                       title="Prompt Parameters"
                     >
@@ -968,6 +1099,83 @@ export default function VibeHatchWizard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Prompt Parameters Configuration modal */}
+      {isParamsOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="liquid-glass-card max-w-md w-full relative shadow-2xl border border-white/[0.15] !p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: 'var(--input-border)' }}>
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <h3 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
+                  Prompt Parameters
+                </h3>
+              </div>
+              <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded font-semibold border" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                Fine-tuning
+              </span>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              {/* Temperature Slider */}
+              <div className="space-y-1.5 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-zinc-300">Generation Temperature</span>
+                  <span className="font-mono text-emerald-400 font-bold">{temperature}</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1.0" 
+                  step="0.1"
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  className="w-full accent-emerald-500 cursor-pointer h-1 bg-zinc-800 rounded-lg appearance-none"
+                />
+                <p className="text-[10px] leading-relaxed text-zinc-500">
+                  Lower settings generate structured, precise prompt formats. Higher values suggest more creative layout ideas.
+                </p>
+              </div>
+
+              {/* Max Output Tokens Selector */}
+              <div className="space-y-1.5 text-left">
+                <span className="font-semibold text-zinc-300 block">Max Target Output Tokens</span>
+                <select
+                  value={maxTokens}
+                  onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                  className="liquid-input text-xs font-mono w-full cursor-pointer py-2 px-3 rounded-lg border focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+                >
+                  <option value="2000" className="bg-zinc-900 text-white">2,000 Tokens (~1,500 words)</option>
+                  <option value="4000" className="bg-zinc-900 text-white">4,000 Tokens (~3,000 words)</option>
+                  <option value="8000" className="bg-zinc-900 text-white">8,000 Tokens (~6,000 words)</option>
+                </select>
+              </div>
+
+              {/* System nudge override */}
+              <div className="space-y-1.5 text-left">
+                <span className="font-semibold text-zinc-300 block">Custom Prompt Constraints Nudge</span>
+                <textarea
+                  value={systemNudge}
+                  onChange={(e) => setSystemNudge(e.target.value)}
+                  className="liquid-input w-full h-16 text-xs resize-none"
+                  placeholder="e.g. Focus on clean code layout. Instruct the AI to structure standard unit tests for components."
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsParamsOpen(false)}
+                className="liquid-btn-primary text-xs !py-2 !px-5 shadow-md cursor-pointer"
+              >
+                Apply Parameters
+              </button>
+            </div>
           </div>
         </div>
       )}

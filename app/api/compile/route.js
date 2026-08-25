@@ -183,7 +183,10 @@ export async function POST(req) {
       enableRedTeam,
       appType = 'web' ,
       dataRequirement = 'cloud',
-      modelId
+      modelId,
+      temperature = 0.2,
+      maxTokens,
+      systemNudge
     } = body;
 
     // 1. Resolve the API Key (BYOK overrides server environment variables)
@@ -265,9 +268,10 @@ This prompt template is intended for the user to copy and feed into another AI (
     // 6. Trigger Universal Synthesis
     const { text } = await generateText({
       model: model,
-      system: systemInstruction,
+      system: systemInstruction + (systemNudge ? `\n\nCustom parameter instruction: ${systemNudge}` : ''),
       messages: messages,
-      temperature: 0.2, // Low temperature for high precision engineering
+      temperature,
+      maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
     });
 
     return NextResponse.json({ result: text || '// Specification rendering engine returned an empty string.' });
