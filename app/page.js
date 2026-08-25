@@ -410,20 +410,20 @@ export default function VibeHatchWizard() {
           {/* Sidebar Top: Project Switcher */}
           <div className="flex items-center justify-between p-2.5 rounded-xl border mb-6" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-500 text-lg">🐣</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
               <span className="text-xs font-black tracking-tight">Vibe Hatch AI</span>
             </div>
-            <span className="text-[10px] text-zinc-400">▾</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><path d="m6 9 6 6 6-6"/></svg>
           </div>
 
           {/* Navigation Menu */}
           <nav className="space-y-1">
             <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #10b981' }}>
-              <span>💬</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Chat Assistant</span>
             </button>
             <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:text-white transition-all">
-              <span>⚙️</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               <span>API Configuration</span>
             </button>
           </nav>
@@ -434,7 +434,7 @@ export default function VibeHatchWizard() {
             <div className="space-y-1 pl-2">
               {["Web SaaS Specs", "Chrome Utilities", "Productivity Bots"].map((folder) => (
                 <div key={folder} className="text-xs py-1 hover:text-emerald-500 cursor-pointer truncate flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                  <span>📂</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>
                   <span className="truncate">{folder}</span>
                 </div>
               ))}
@@ -478,7 +478,7 @@ export default function VibeHatchWizard() {
           <div className={`bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2 shadow-sm max-w-lg shrink-0 ${
             theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'
           }`}>
-            <span>💚</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
             <span className="truncate">Vibe Hatch AI can make mistakes. Verify important prompt outputs.</span>
           </div>
         </div>
@@ -525,17 +525,17 @@ export default function VibeHatchWizard() {
                     <button 
                       type="button" 
                       onClick={() => setIsModalOpen(true)} 
-                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)]" 
+                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)] flex items-center justify-center" 
                       title="API Configuration"
                     >
-                      ⚙️
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                     <button 
                       type="button" 
-                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)]" 
+                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)] flex items-center justify-center" 
                       title="Prompt Parameters"
                     >
-                      ✨
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5 5 3Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg>
                     </button>
                   </div>
                   <div className="flex items-center gap-3">
@@ -597,12 +597,16 @@ export default function VibeHatchWizard() {
                       msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
                     }`}
                   >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs border ${
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border ${
                       theme === 'dark' 
                         ? 'bg-white/5 border-white/10 text-zinc-300' 
                         : 'bg-slate-200 border-slate-300 text-slate-800'
                     }`}>
-                      {msg.role === 'user' ? '👤' : '🤖'}
+                      {msg.role === 'user' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                      )}
                     </div>
                     <div
                       className={`p-3 rounded-2xl text-xs leading-relaxed border ${
@@ -621,10 +625,10 @@ export default function VibeHatchWizard() {
                 ))}
                 {isLoading && (
                   <div className="flex gap-2.5 max-w-[80%] animate-pulse">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs border ${
-                      theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-slate-200 border-slate-300'
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border ${
+                      theme === 'dark' ? 'bg-white/5 border-white/10 text-zinc-300' : 'bg-slate-200 border-slate-300 text-slate-800'
                     }`}>
-                      🤖
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
                     </div>
                     <div className={`p-3 rounded-2xl text-xs border flex items-center gap-1 ${
                       theme === 'dark'
@@ -676,13 +680,23 @@ export default function VibeHatchWizard() {
                   <button
                     onClick={handleHatchPrompt}
                     disabled={isCompiling}
-                    className={`flex-1 py-2.5 rounded-xl font-bold transition text-xs cursor-pointer ${
+                    className={`flex-1 py-2.5 rounded-xl font-bold transition text-xs cursor-pointer flex items-center justify-center ${
                       readyToHatch || isAiReady
                         ? 'bg-emerald-500 text-black border border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:brightness-105'
                         : 'bg-zinc-800 border border-zinc-700 text-zinc-500 cursor-not-allowed'
                     }`}
                   >
-                    {isCompiling ? '⚡ Gathering constraints...' : 'Hatch Developer Prompt 📐'}
+                    {isCompiling ? (
+                      <span className="flex items-center justify-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10c0 2-3 3-3 3"/></svg>
+                        Gathering constraints...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.3 15.3a2.82 2.82 0 0 1 0 4c-1 1-2.5 1-3.5 0L2.3 3.8a2.82 2.82 0 0 1 0-4c1-1 2.5-1 3.5 0Z"/><path d="m5.6 7.2 1.4-1.4"/><path d="m7.2 10.4 1.4-1.4"/><path d="m10.4 12 1.4-1.4"/><path d="m12 15.2 1.4-1.4"/><path d="m15.2 16.8 1.4-1.4"/></svg>
+                        Hatch Developer Prompt
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -719,13 +733,19 @@ export default function VibeHatchWizard() {
                   onClick={() => setOutputFormat('standard')}
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
                 >
-                  📋 Standard
+                  <span className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                    Standard
+                  </span>
                 </button>
                 <button
                   onClick={() => setOutputFormat('cursorrules')}
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
                 >
-                  ⚡ .cursorrules
+                  <span className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    .cursorrules
+                  </span>
                 </button>
               </div>
 
@@ -761,7 +781,10 @@ export default function VibeHatchWizard() {
             {/* Token savings statistics */}
             <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
               <div>
-                <span className="text-emerald-500 font-semibold">⚡ ~{stats?.saved?.toLocaleString()} Tokens Optimized</span>
+                <span className="text-emerald-500 font-semibold inline-flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="fill-emerald-500 stroke-none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  ~{stats?.saved?.toLocaleString()} Tokens Optimized
+                </span>
                 <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
               </div>
               <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
@@ -775,7 +798,10 @@ export default function VibeHatchWizard() {
             {isCompiling ? (
               <div className="space-y-4 animate-pulse p-2 font-sans select-none">
                 <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 w-fit">
-                  <span>⚡ Archiving & generating prompt template...</span>
+                  <span className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10c0 2-3 3-3 3"/></svg>
+                    Archiving & generating prompt template...
+                  </span>
                 </div>
                 <div className="space-y-2 pt-2">
                   <div className="h-2 bg-white/[0.1] rounded w-1/4 mb-3"></div>
@@ -790,8 +816,9 @@ export default function VibeHatchWizard() {
 
           {/* Continuous Prompt Refinements input */}
           <div className="space-y-2 pt-3 border-t shrink-0" style={{ borderColor: 'var(--glass-border)' }}>
-            <span className="text-[8px] uppercase font-mono tracking-wider font-semibold block" style={{ color: 'var(--text-dim)' }}>
-              ⚡ Adjust Prompt Constraints
+            <span className="text-[8px] uppercase font-mono tracking-wider font-semibold flex items-center gap-1" style={{ color: 'var(--text-dim)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Adjust Prompt Constraints
             </span>
             <form onSubmit={handleRefinePrompt} className="flex gap-1.5">
               <input
@@ -821,7 +848,7 @@ export default function VibeHatchWizard() {
           <div className="liquid-glass-card max-w-lg w-full relative shadow-2xl border border-white/[0.15] !p-6">
             <div className="flex items-center justify-between pb-3 border-b mb-4" style={{ borderColor: 'var(--input-border)' }}>
               <div className="flex items-center gap-2">
-                <span className="text-xl">⚡</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 <h3 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
                   AI Engine Settings
                 </h3>
@@ -919,7 +946,8 @@ export default function VibeHatchWizard() {
                       rel="noopener noreferrer" 
                       className="text-emerald-500 hover:text-emerald-400 font-semibold underline inline-flex items-center gap-1"
                     >
-                      🔑 Get your {getActiveModelLabel()} API Key ↗
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3M17 6l3 3"/></svg>
+                      Get your {getActiveModelLabel()} API Key ↗
                     </a>
                   </div>
                 )}
@@ -934,8 +962,9 @@ export default function VibeHatchWizard() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="liquid-btn-primary text-xs !py-2 !px-5 shadow-md cursor-pointer">
-                  Activate Settings ⚡
+                <button type="submit" className="liquid-btn-primary text-xs !py-2 !px-5 shadow-md cursor-pointer flex items-center gap-1.5 justify-center">
+                  Activate Settings
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 </button>
               </div>
             </form>
@@ -947,7 +976,9 @@ export default function VibeHatchWizard() {
       {isLimitModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="liquid-glass-card max-w-md w-full relative border border-white/[0.15] !p-6 text-center space-y-4">
-            <span className="text-4xl block">🐣</span>
+            <div className="flex justify-center text-emerald-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C7 2 3 7 3 14c0 4.4 4 8 9 8s9-3.6 9-8c0-7-4-12-9-12z"/></svg>
+            </div>
             <h3 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
               Daily Capacity Reached!
             </h3>
@@ -957,9 +988,10 @@ export default function VibeHatchWizard() {
             <div className="flex flex-col gap-2 pt-2">
               <button
                 onClick={() => { setIsLimitModalOpen(false); setIsModalOpen(true); }}
-                className="liquid-btn-primary text-xs w-full"
+                className="liquid-btn-primary text-xs w-full flex items-center justify-center gap-1.5"
               >
-                🔑 Connect Free Key in Settings
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3M17 6l3 3"/></svg>
+                Connect Free Key in Settings
               </button>
               <button
                 onClick={() => setIsLimitModalOpen(false)}
