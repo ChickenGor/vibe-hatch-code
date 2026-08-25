@@ -63,7 +63,7 @@ function getModelInstance(provider, apiKey) {
     case 'google':
     default:
       const google = createGoogleGenerativeAI({ apiKey });
-      return google('gemini-2.5-flash'); // Highly efficient for chat
+      return google('gemini-3.6-flash'); // Highly efficient for chat
   }
 }
 

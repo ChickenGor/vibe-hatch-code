@@ -71,7 +71,7 @@ function getModelInstance(provider, apiKey) {
     case 'google':
     default:
       const google = createGoogleGenerativeAI({ apiKey });
-      return google('gemini-3.5-flash');
+      return google('gemini-3.6-flash');
   }
 }
 

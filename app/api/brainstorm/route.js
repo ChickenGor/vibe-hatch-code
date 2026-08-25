@@ -29,11 +29,11 @@ export async function POST(req) {
         config: { temperature: 0.7 }
       });
     } catch (error) {
-      console.warn('⚠️ Primary model busy! Silently falling back to 2.5 Flash...', error.message);
+      console.warn('⚠️ Primary model busy! Silently falling back to 3.6 Flash...', error.message);
       
       // 🥈 Attempt 2: Instantly fall back to the high-capacity workhorse!
       response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.6-flash',
         contents: prompt,
         config: { temperature: 0.7 }
       });

@@ -29,7 +29,7 @@ export async function POST(req) {
 
     // Trigger Gemini synthesis
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Blazing fast response speeds perfect for chat iteration
+      model: 'gemini-3.6-flash', // Blazing fast response speeds perfect for chat iteration
       contents: formattedContents,
       config: {
         systemInstruction: systemPrompt,
