@@ -663,7 +663,7 @@ export default function VibeHatchWizard() {
 
   return (
     <div
-      className={`min-h-screen flex relative transition-colors duration-500 selection:bg-emerald-500/30 selection:text-emerald-500 ${
+      className={`h-screen overflow-hidden flex relative transition-colors duration-500 selection:bg-emerald-500/30 selection:text-emerald-500 ${
         theme === 'light' ? 'light-mode bg-white text-slate-900' : 'bg-[#121214] text-zinc-100'
       }`}
     >
@@ -843,7 +843,7 @@ export default function VibeHatchWizard() {
       </aside>
 
       {/* 2. MAIN CENTERED CHAT COLUMN */}
-      <main className="flex-1 flex flex-col justify-between min-w-0 bg-[var(--bg-main)] relative">
+      <main className="flex-1 flex flex-col justify-between min-w-0 bg-[var(--bg-main)] relative h-full overflow-hidden">
         
         {/* Sidebar Expand trigger (shows floating when sidebar is collapsed) */}
         {!isSidebarOpen && (
@@ -938,7 +938,7 @@ export default function VibeHatchWizard() {
         </div>
 
         {/* Dynamic center workspace */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 flex flex-col justify-center">
+        <div className="flex-1 overflow-hidden px-4 md:px-8 py-6 flex flex-col min-h-0">
           
           {isChatFresh ? (
             /* FRESH STATE: Elegant Centered Greeting (Viper layout style) */
@@ -1076,7 +1076,7 @@ export default function VibeHatchWizard() {
             </div>
           ) : (
             /* CONVERSATION ACTIVE STATE: Scrollable Chatroom */
-            <div className="max-w-2xl w-full mx-auto flex flex-col h-full justify-between">
+            <div className="max-w-2xl w-full mx-auto flex flex-col flex-1 min-h-0 justify-between">
               
               {/* Requirements Checklist Progress */}
               <div className="grid grid-cols-5 gap-1.5 p-2 rounded-xl mb-4 text-[9px] font-mono border shrink-0" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
