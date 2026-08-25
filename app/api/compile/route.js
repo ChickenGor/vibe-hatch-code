@@ -187,7 +187,9 @@ export async function POST(req) {
       temperature = 0.2,
       maxTokens,
       systemNudge,
-      intentMode = 'new_app'
+      intentMode = 'new_app',
+      selectedStack = [],
+      runRedTeam = false
     } = body;
 
     // 1. Resolve the API Key (BYOK overrides server environment variables)
@@ -228,7 +230,32 @@ export async function POST(req) {
     const model = getModelInstance(provider, activeApiKey, modelId);
 
     // 4. Configure the System Prompt to generate a prompt template
-    const techEnforcement = `\n\nTECHNICAL REFERENCE SPECIFICATIONS:\nUse these standard blueprints if the user chose or implied these technologies:\n\n[EXECUTION ENVIRONMENT]\n${selectedEnvSpec}\n\n[DATA & PERSISTENCE TOPOLOGY]\n${selectedPersistenceSpec}\n`;
+    const STACK_BLUEPRINTS = {
+      nextjs: `Next.js 15: Use App Router (/app), React Server Components (RSC) by default, and Server Actions for data fetching.`,
+      vite: `Vite: Standard React SPA client architecture with client-side routing (React Router V6).`,
+      supabase: `Supabase: Relational postgres DB integration, RLS enabled on all tables, and client auth keys loaded via env.`,
+      prisma: `Prisma: Node ORM. Always output a clean schema.prisma model file with correct relation fields.`,
+      postgres: `PostgreSQL: Ingest relations, design clean transactional schemas, index foreign keys, and keep names snake_case.`,
+      sqlite: `SQLite: Lightweight local offline data file structure. Handle concurrent write limits gracefully.`,
+      tailwind: `Tailwind CSS: Use standard Tailwind design classes, flex/grid layouts, responsive sm/md/lg prefixes, and avoid custom CSS styles.`,
+      shadcn: `shadcn/ui: Premium tailwind components. Direct imports from @components/ui/button. Use clean Radix primitives.`
+    };
+
+    let injectedStackBlueprints = '';
+    if (selectedStack.length > 0) {
+      injectedStackBlueprints = `\n\n[USER-SELECTED STACK SPECS]\n` + selectedStack.map(s => STACK_BLUEPRINTS[s] || '').filter(Boolean).join('\n') + `\n`;
+    }
+
+    const techEnforcement = `\n\nTECHNICAL REFERENCE SPECIFICATIONS:\nUse these standard blueprints if the user chose or implied these technologies:\n\n[EXECUTION ENVIRONMENT]\n${selectedEnvSpec}\n\n[DATA & PERSISTENCE TOPOLOGY]\n${selectedPersistenceSpec}\n${injectedStackBlueprints}`;
+
+    const fileTreeRule = `\n\nCRITICAL SPECIFICATION DIRECTIVE:\nFor any file structure, configuration file, database schema, stylesheet, or code component you write, you MUST wrap it inside a custom <file path="path/to/file.ext">...code...</file> block, detailing the absolute relative workspace path in the path attribute. Do not omit the file tag. This will allow the prompt rendering workspace to build an interactive file tree.`;
+
+    const redTeamRule = runRedTeam 
+      ? `\n\nRED TEAM SECURITY & PERFORMANCE AUDIT FORCE:\nSince the user enabled Red Team Audits, you MUST include a dedicated section at the end of the compiled specifications detailing:
+1. Threat Modeling: What are the security risks in the selected stack (e.g., SQLite write locks under high load, data leaks via Supabase RLS bypass, CSRF on NextJS Server Actions)?
+2. Mitigation Blueprints: Write precise configuration setups to lock down these security vulnerabilities.
+3. Performance Benchmarks: List memory usage patterns, caching strategies, and database indexing recommendations to keep operations optimized.`
+      : '';
 
     let systemInstruction = '';
     let compilePromptLabel = '';
@@ -237,24 +264,24 @@ export async function POST(req) {
       compilePromptLabel = 'Code Modification Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Senior Codebase Architect. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive Feature Addition & Code Modification Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or Windsurf) to implement a new feature or change inside an existing codebase.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Code Modification Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the requested feature changes. It must include sections for: Target Feature Specification, Existing Code Context, File Directory Diffs (which files to create, modify, or delete), Implementation Steps (state changes, utility updates, API routing integrations), Regression Concerns, and Automated/Manual Verification Steps. Return only raw structured markdown without conversational filler.${techEnforcement}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Code Modification Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the requested feature changes. It must include sections for: Target Feature Specification, Existing Code Context, File Directory Diffs (which files to create, modify, or delete), Implementation Steps (state changes, utility updates, API routing integrations), Regression Concerns, and Automated/Manual Verification Steps. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
     } else if (intentMode === 'solve_problem') {
       compilePromptLabel = 'Bug Fix & Troubleshooting Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Principal Debugging Engineer. Your task is to analyze the user troubleshooting logs and compile a highly structured, comprehensive Bug Fix & Troubleshooting Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or ChatGPT) to debug and patch a specific issue or error trace.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Troubleshooting Prompt Template (formatted in markdown). The prompt should guide a debugging AI step-by-step to find the root cause and patch the error. It must include sections for: Defect Summary & Stack Trace, Code Context & Suspected Files, Step-by-Step Diagnostic Plan, Surgical Patch Placement Instructions, Safety & Performance Checks (to prevent side-effects), and Regression/Unit Testing Verification. Return only raw structured markdown without conversational filler.${techEnforcement}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Troubleshooting Prompt Template (formatted in markdown). The prompt should guide a debugging AI step-by-step to find the root cause and patch the error. It must include sections for: Defect Summary & Stack Trace, Code Context & Suspected Files, Step-by-Step Diagnostic Plan, Surgical Patch Placement Instructions, Safety & Performance Checks (to prevent side-effects), and Regression/Unit Testing Verification. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
     } else if (intentMode === 'refactor_redesign') {
       compilePromptLabel = 'UI Redesign & Refactoring Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Principal Frontend Designer. Your task is to analyze the styling & refactoring logs and compile a highly structured, comprehensive UI Redesign & Refactoring Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, or v0) to redesign the user interface, convert styling layers, or refactor layout structures.`;
-      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Refactoring & Design Prompt Template (formatted in markdown). The prompt should guide a styling AI step-by-step to overhaul the UI or clean up components. It must include sections for: Refactoring Goals, Design Theme Tokens (Opal Light vs Obsidian Void color variables), Component Restructuring Plan, CSS Migration Rules (e.g. converting modules to Tailwind), Responsive Layout Checklists, Accessibility Compliance, and Side-by-Side Visual Verification Checks. Return only raw structured markdown without conversational filler.${techEnforcement}`;
+      systemInstruction = `${baseSystemRole} Synthesize a comprehensive Refactoring & Design Prompt Template (formatted in markdown). The prompt should guide a styling AI step-by-step to overhaul the UI or clean up components. It must include sections for: Refactoring Goals, Design Theme Tokens (Opal Light vs Obsidian Void color variables), Component Restructuring Plan, CSS Migration Rules (e.g. converting modules to Tailwind), Responsive Layout Checklists, Accessibility Compliance, and Side-by-Side Visual Verification Checks. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
     } else {
       compilePromptLabel = outputFormat === 'cursorrules' ? '.cursorrules prompt configuration' : 'App Development Prompt Template';
       const baseSystemRole = `You are an expert Prompt Engineer and Senior Product Manager. Your task is to analyze the user requirements interview logs and compile a highly structured, comprehensive App Development Prompt Template.
 This prompt template is intended for the user to copy and feed into another AI (like Cursor, Claude, ChatGPT, or v0) to build their application from scratch.`;
       systemInstruction = outputFormat === 'cursorrules'
-        ? `${baseSystemRole} Synthesize a Development Prompt Template structured specifically for AI IDEs like Cursor/Windsurf (as a .cursorrules file or System Instruction). The output should enforce strict instructions, file directory layouts, system setup guidelines, and detailed build steps in raw markdown. Do not include conversational filler.${techEnforcement}`
-        : `${baseSystemRole} Synthesize a comprehensive Development Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the app. It must include sections for: Role/Persona, Project Context, Stack & Architecture, Feature Roadmap (Phase-by-Phase), Database/Persistence schema, UI/UX Guidelines, and Verification steps. Return only raw structured markdown without conversational filler.${techEnforcement}`;
+        ? `${baseSystemRole} Synthesize a Development Prompt Template structured specifically for AI IDEs like Cursor/Windsurf (as a .cursorrules file or System Instruction). The output should enforce strict instructions, file directory layouts, system setup guidelines, and detailed build steps in raw markdown. Do not include conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`
+        : `${baseSystemRole} Synthesize a comprehensive Development Prompt Template (formatted in markdown). The prompt should guide a building AI step-by-step to implement the app. It must include sections for: Role/Persona, Project Context, Stack & Architecture, Feature Roadmap (Phase-by-Phase), Database/Persistence schema, UI/UX Guidelines, and Verification steps. Return only raw structured markdown without conversational filler.${techEnforcement}${fileTreeRule}${redTeamRule}`;
     }
 
     // 5. Format Messages for the Vercel AI SDK

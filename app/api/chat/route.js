@@ -79,7 +79,9 @@ export async function POST(req) {
       temperature = 0.7,
       maxTokens,
       systemNudge,
-      intentMode = 'new_app'
+      intentMode = 'new_app',
+      selectedStack = [],
+      runRedTeam = false
     } = body;
 
     // Resolve API key
@@ -146,7 +148,12 @@ Ask exactly ONE clear, friendly question at a time to discover:
 5. Data Storage / Persistence (e.g. LocalStorage, Supabase, Cloud DB, Vector Memory)`;
     }
 
-    const systemInstruction = modeInstruction + `\n\nCRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.
+    let stackContext = '';
+    if (selectedStack && selectedStack.length > 0) {
+      stackContext = `\n\nUser pre-selected tech stack tags: [${selectedStack.join(', ')}]. Tailor your questions to integrate these, and don't ask what stack they want if it is already selected.`;
+    }
+
+    const systemInstruction = modeInstruction + stackContext + `\n\nCRITICAL FOR TOKEN EFFICIENCY: Keep your responses extremely short (max 2 sentences, under 40 words total). Get straight to the point.
 Once you have collected the user's details, or if they ask to hatch the prompt, summarize what is collected and append the exact tag "[READY_TO_HATCH]" at the very end of your response.` + (systemNudge ? `\n\nCustom instruction override: ${systemNudge}` : '');
 
     // Token efficiency: send only the last 8 messages (4 turns) of the conversation to keep input context small

@@ -74,6 +74,93 @@ const PROVIDER_MODELS = {
   ]
 };
 
+const parseCodebaseFiles = (text) => {
+  if (!text) return {};
+  const regex = /<file\s+path="([^"]+)"[^>]*>([\s\S]*?)<\/file>/gi;
+  const files = {};
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    files[match[1]] = match[2].trim();
+  }
+  return files;
+};
+
+const cleanMarkdownForDisplay = (text) => {
+  if (!text) return "";
+  return text.replace(/<file\s+path="([^"]+)"[^>]*>([\s\S]*?)<\/file>/gi, (match, path, code) => {
+    const extension = path.split('.').pop() || '';
+    const codeBlockLang = ['js', 'jsx', 'ts', 'tsx', 'html', 'css', 'json', 'py', 'sh', 'rust'].includes(extension) ? extension : '';
+    return `\n**File: \`${path}\`**\n\`\`\`${codeBlockLang}\n${code.trim()}\n\`\`\`\n`;
+  });
+};
+
+const buildFileTree = (files) => {
+  const tree = {};
+  Object.keys(files).forEach((filePath) => {
+    const parts = filePath.split('/');
+    let current = tree;
+    parts.forEach((part, index) => {
+      if (!current[part]) {
+        current[part] = {
+          name: part,
+          path: parts.slice(0, index + 1).join('/'),
+          isFolder: index < parts.length - 1,
+          children: {}
+        };
+      }
+      current = current[part].children;
+    });
+  });
+  return tree;
+};
+
+const FileNode = ({ node, onSelectFile, selectedFile, openFolders, toggleFolder }) => {
+  const isFolder = node.isFolder;
+  const isOpen = !!openFolders[node.path];
+
+  if (isFolder) {
+    return (
+      <div className="pl-2.5">
+        <button
+          onClick={() => toggleFolder(node.path)}
+          className="flex items-center gap-1.5 py-1 text-xs text-zinc-400 hover:text-white transition w-full text-left font-mono cursor-pointer"
+        >
+          <span className="text-[9px] text-zinc-500">{isOpen ? '▼' : '▶'}</span>
+          <span>📁 {node.name}</span>
+        </button>
+        {isOpen && (
+          <div className="border-l border-zinc-800 ml-1.5 pl-1.5 space-y-0.5">
+            {Object.values(node.children).map((child) => (
+              <FileNode
+                key={child.path}
+                node={child}
+                onSelectFile={onSelectFile}
+                selectedFile={selectedFile}
+                openFolders={openFolders}
+                toggleFolder={toggleFolder}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const active = selectedFile === node.path;
+  return (
+    <button
+      onClick={() => onSelectFile(node.path)}
+      className={`flex items-center gap-1.5 py-1 pl-4 text-xs font-mono transition w-full text-left rounded-lg truncate cursor-pointer ${
+        active 
+          ? 'bg-emerald-500/10 text-emerald-400 font-semibold' 
+          : 'text-zinc-500 hover:text-zinc-300'
+      }`}
+    >
+      <span>📄 {node.name}</span>
+    </button>
+  );
+};
+
 
 export default function VibeHatchWizard() {
   // Theme state
@@ -164,6 +251,10 @@ export default function VibeHatchWizard() {
     refactor_redesign: -1
   });
 
+  const [selectedStack, setSelectedStack] = useState([]);
+  const [runRedTeam, setRunRedTeam] = useState(false);
+  const [isStackDrawerOpen, setIsStackDrawerOpen] = useState(false);
+
   // Prompt execution parameter states
   const [temperature, setTemperature] = useState(0.2);
   const [maxTokens, setMaxTokens] = useState(4000);
@@ -174,6 +265,9 @@ export default function VibeHatchWizard() {
 
   // UI state: Collapsible Prompt Preview Panel
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+  const [activePreviewTab, setActivePreviewTab] = useState('spec');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [openFolders, setOpenFolders] = useState({});
 
   // Time-of-day greeting
   const [greeting, setGreeting] = useState("Good morning");
@@ -187,6 +281,10 @@ export default function VibeHatchWizard() {
     else if (hr < 17) setGreeting("Good afternoon");
     else setGreeting("Good evening");
   }, []);
+
+  const toggleFolder = (folderPath) => {
+    setOpenFolders(prev => ({ ...prev, [folderPath]: !prev[folderPath] }));
+  };
 
   const switchIntent = (targetMode) => {
     // Save current active state
@@ -383,7 +481,9 @@ export default function VibeHatchWizard() {
           temperature,
           maxTokens,
           systemNudge,
-          intentMode
+          intentMode,
+          selectedStack,
+          runRedTeam
         })
       });
 
@@ -432,7 +532,9 @@ export default function VibeHatchWizard() {
           temperature,
           maxTokens,
           systemNudge,
-          intentMode
+          intentMode,
+          selectedStack,
+          runRedTeam
         })
       });
 
@@ -493,7 +595,9 @@ export default function VibeHatchWizard() {
           temperature,
           maxTokens,
           systemNudge,
-          intentMode
+          intentMode,
+          selectedStack,
+          runRedTeam
         })
       });
 
@@ -804,6 +908,70 @@ export default function VibeHatchWizard() {
               </button>
             ))}
           </div>
+
+          {/* Tech Matchmaker & Red Team Controls */}
+          <div className="max-w-md w-full flex flex-col gap-2 transition-all">
+            <div className="flex items-center justify-between text-[10px] px-1.5">
+              <button 
+                onClick={() => setIsStackDrawerOpen(prev => !prev)}
+                className="flex items-center gap-1 hover:text-emerald-400 text-zinc-400 font-semibold cursor-pointer select-none"
+              >
+                <span>🛠️ Tech Matchmaker</span>
+                <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 font-bold">{selectedStack.length} selected</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-250 ${isStackDrawerOpen ? 'rotate-90' : ''}`} strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+
+              {/* Red Team Toggle */}
+              <label className="flex items-center gap-1.5 cursor-pointer text-zinc-400 hover:text-white select-none">
+                <input 
+                  type="checkbox" 
+                  checked={runRedTeam} 
+                  onChange={(e) => setRunRedTeam(e.target.checked)} 
+                  className="accent-emerald-500 rounded cursor-pointer w-3.5 h-3.5"
+                />
+                <span className="font-bold tracking-tight text-[10px]">🔒 Red-Team Audit</span>
+              </label>
+            </div>
+
+            {isStackDrawerOpen && (
+              <div 
+                className="p-3 rounded-xl border flex flex-wrap gap-1.5 animate-fade-in"
+                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
+              >
+                {[
+                  { id: 'nextjs', label: 'Next.js 15' },
+                  { id: 'vite', label: 'Vite' },
+                  { id: 'supabase', label: 'Supabase' },
+                  { id: 'prisma', label: 'Prisma' },
+                  { id: 'postgres', label: 'PostgreSQL' },
+                  { id: 'sqlite', label: 'SQLite' },
+                  { id: 'tailwind', label: 'Tailwind CSS' },
+                  { id: 'shadcn', label: 'shadcn/ui' }
+                ].map(tech => {
+                  const active = selectedStack.includes(tech.id);
+                  return (
+                    <button
+                      key={tech.id}
+                      onClick={() => {
+                        setSelectedStack(prev => 
+                          prev.includes(tech.id) 
+                            ? prev.filter(t => t !== tech.id) 
+                            : [...prev, tech.id]
+                        );
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-tight transition cursor-pointer select-none ${
+                        active 
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-black' 
+                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-500'
+                      }`}
+                    >
+                      {tech.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Dynamic center workspace */}
@@ -1090,37 +1258,58 @@ export default function VibeHatchWizard() {
             <>
               {/* Controls bar */}
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--glass-border)' }}>
-                  {/* Output format selectors */}
-                  <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
-                    <button
-                      onClick={() => setOutputFormat('standard')}
-                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                        Standard
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => setOutputFormat('cursorrules')}
-                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        .cursorrules
-                      </span>
-                    </button>
+                <div className="flex flex-col gap-2 pb-3 border-b mb-3" style={{ borderColor: 'var(--glass-border)' }}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    {/* View mode tabs */}
+                    <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                      <button
+                        onClick={() => setActivePreviewTab('spec')}
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${activePreviewTab === 'spec' ? 'tab-active' : 'tab-inactive'}`}
+                      >
+                        📝 Spec Sheet
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActivePreviewTab('workspace');
+                          setSelectedFile(null);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${activePreviewTab === 'workspace' ? 'tab-active' : 'tab-inactive'}`}
+                      >
+                        📁 File Explorer
+                      </button>
+                    </div>
+
+                    {/* Output format selectors (Only visible in Spec tab) */}
+                    {activePreviewTab === 'spec' && (
+                      <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                        <button
+                          onClick={() => setOutputFormat('standard')}
+                          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${outputFormat === 'standard' ? 'tab-active' : 'tab-inactive'}`}
+                        >
+                          Standard
+                        </button>
+                        <button
+                          onClick={() => setOutputFormat('cursorrules')}
+                          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer select-none ${outputFormat === 'cursorrules' ? 'tab-active' : 'tab-inactive'}`}
+                        >
+                          .cursorrules
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Checkpoints */}
                   {versions.length > 1 && (
-                    <div className="flex items-center gap-1 p-1 rounded-xl border text-[9px]" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl border text-[9px] w-fit" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+                      <span className="text-[8px] text-zinc-500 uppercase font-bold tracking-tight px-1">Checkpoints:</span>
                       {versions.map((_, idx) => (
                         <button
                           key={idx}
-                          onClick={() => setCurrentVersionIdx(idx)}
-                          className={`px-1.5 py-0.5 rounded font-mono font-bold transition ${currentVersionIdx === idx ? 'bg-emerald-500 text-white' : 'text-zinc-400'}`}
+                          onClick={() => {
+                            setCurrentVersionIdx(idx);
+                            setSelectedFile(null);
+                          }}
+                          className={`px-1.5 py-0.5 rounded font-mono font-bold transition cursor-pointer ${currentVersionIdx === idx ? 'bg-emerald-500 text-white' : 'text-zinc-400'}`}
                         >
                           v{idx + 1}
                         </button>
@@ -1129,38 +1318,42 @@ export default function VibeHatchWizard() {
                   )}
                 </div>
 
-                {/* Actions: Copy & Download */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">Compiled Output</span>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={downloadMarkdown} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
-                      Download
-                    </button>
-                    <button onClick={copyToClipboard} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
-                      {copied ? "Copied! ✓" : "Copy"}
-                    </button>
+                {/* Actions: Copy & Download (Only visible in Spec tab) */}
+                {activePreviewTab === 'spec' && (
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">Compiled Output</span>
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={downloadMarkdown} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                        Download
+                      </button>
+                      <button onClick={copyToClipboard} className="px-2 py-1 rounded border text-[9px] font-medium hover:bg-zinc-800 transition cursor-pointer" style={{ borderColor: 'var(--input-border)', color: 'var(--text-main)' }}>
+                        {copied ? "Copied! ✓" : "Copy"}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Token savings statistics */}
-                <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
-                  <div>
-                    <span className="text-emerald-500 font-semibold inline-flex items-center gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="fill-emerald-500 stroke-none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      ~{stats?.saved?.toLocaleString()} Tokens Optimized
+                {/* Token savings statistics (Only visible in Spec tab) */}
+                {activePreviewTab === 'spec' && (
+                  <div className="mb-3 p-2.5 border rounded-xl text-[9px] font-mono flex flex-wrap justify-between items-center gap-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+                    <div>
+                      <span className="text-emerald-500 font-semibold inline-flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="fill-emerald-500 stroke-none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        ~{stats?.saved?.toLocaleString()} Tokens Optimized
+                      </span>
+                      <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
+                    </div>
+                    <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                      v{currentVersionIdx + 1}
                     </span>
-                    <span className="ml-1 font-light" style={{ color: 'var(--text-muted)' }}>(~${stats?.dollars} Context saved)</span>
                   </div>
-                  <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                    v{currentVersionIdx + 1}
-                  </span>
-                </div>
+                )}
               </div>
 
               {/* Compiled Output Viewbox */}
-              <div className="flex-1 rounded-xl p-3 font-mono text-[10px] text-emerald-400 overflow-y-auto border border-white/[0.08] whitespace-pre-wrap leading-relaxed select-all shadow-inner relative" style={{ backgroundColor: 'var(--code-bg)' }}>
+              <div className="flex-1 rounded-xl p-3 overflow-y-auto border border-white/[0.08] leading-relaxed shadow-inner relative flex flex-col justify-between" style={{ backgroundColor: 'var(--code-bg)' }}>
                 {isCompiling ? (
-                  <div className="space-y-4 animate-pulse p-2 font-sans select-none">
+                  <div className="space-y-4 animate-pulse p-2 font-sans select-none flex-1">
                     <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider mb-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 w-fit">
                       <span className="flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10c0 2-3 3-3 3"/></svg>
@@ -1173,8 +1366,82 @@ export default function VibeHatchWizard() {
                       <div className="h-1.5 bg-white/[0.05] rounded w-1/2"></div>
                     </div>
                   </div>
+                ) : activePreviewTab === 'spec' ? (
+                  /* TAB A: SPEC SHEET VIEW */
+                  <div className="font-mono text-[10px] text-emerald-400 select-all whitespace-pre-wrap flex-1">
+                    {cleanMarkdownForDisplay(currentPromptContent)}
+                  </div>
                 ) : (
-                  currentPromptContent
+                  /* TAB B: WORKSPACE FILE EXPLORER VIEW */
+                  (() => {
+                    const parsedFiles = parseCodebaseFiles(currentPromptContent);
+                    const fileList = Object.keys(parsedFiles);
+                    if (fileList.length === 0) {
+                      return (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 my-auto select-none font-sans">
+                          <span className="text-2xl">📁</span>
+                          <h5 className="text-[11px] font-bold text-zinc-300">Workspace is Ephemeral</h5>
+                          <p className="text-[10px] max-w-xs text-zinc-500 leading-normal">
+                            No codebase components or files were structured in this checkpoint. Switch tab back to Spec Sheet or request a code feature.
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    if (selectedFile) {
+                      const activeCode = parsedFiles[selectedFile] || '';
+                      return (
+                        <div className="flex-1 flex flex-col h-full text-left font-sans animate-fade-in">
+                          {/* File editor controls */}
+                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 shrink-0">
+                            <button
+                              onClick={() => setSelectedFile(null)}
+                              className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 transition cursor-pointer font-bold inline-flex items-center gap-1"
+                            >
+                              ← Tree
+                            </button>
+                            <span className="text-[10px] font-mono text-zinc-400 font-bold truncate max-w-[150px]">{selectedFile}</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(activeCode);
+                                alert(`Copied code for ${selectedFile}`);
+                              }}
+                              className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[9px] text-emerald-400 border border-emerald-500/20 transition cursor-pointer font-bold"
+                            >
+                              Copy File
+                            </button>
+                          </div>
+                          {/* Code viewport container */}
+                          <pre className="flex-1 p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 font-mono text-[10px] text-zinc-300 overflow-auto whitespace-pre select-all max-h-[420px]">
+                            <code>{activeCode}</code>
+                          </pre>
+                        </div>
+                      );
+                    }
+
+                    // Render File Explorer directory tree list
+                    const tree = buildFileTree(parsedFiles);
+                    return (
+                      <div className="flex-1 flex flex-col h-full text-left font-sans select-none animate-fade-in">
+                        <span className="text-[9px] uppercase font-mono tracking-wider font-bold block mb-2 text-zinc-500">Root Directory</span>
+                        <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                          {Object.values(tree).map((node) => (
+                            <FileNode
+                              key={node.path}
+                              node={node}
+                              onSelectFile={(path) => setSelectedFile(path)}
+                              selectedFile={selectedFile}
+                              openFolders={openFolders}
+                              toggleFolder={toggleFolder}
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-3 p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/40 text-[9px] text-zinc-500 leading-normal">
+                          💡 Click on directories to expand folders, or files to inspect/copy codebase segments.
+                        </div>
+                      </div>
+                    );
+                  })()
                 )}
               </div>
 
