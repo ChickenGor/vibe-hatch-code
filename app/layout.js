@@ -1,19 +1,11 @@
 import './globals.css';
-// 1. Import your fonts from the Next.js Google font module
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 
 // 2. Configure the UI Sans Font
 const jakarta = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-jakarta', // Creates a CSS variable
-});
-
-// 3. Configure the Futuristic Monospace Code Font
-const jetbrains = JetBrains_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-jetbrains', // Creates a CSS variable
 });
 
 export const metadata = {
@@ -27,8 +19,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // 4. Inject both font variables into the html tag!
-    <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${jakarta.variable}`}>
       <body className={`${jakarta.className} antialiased`}>
         {children}
       </body>
