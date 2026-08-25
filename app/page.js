@@ -1525,24 +1525,6 @@ export default function VibeHatchWizard() {
               ))}
             </div>
 
-            {/* Model Selector Dropdown */}
-            <div className="space-y-1.5 mb-4 text-left">
-              <label className="block text-[11px] font-mono uppercase tracking-wider font-semibold">
-                Select Model:
-              </label>
-              <select
-                value={modelId}
-                onChange={(e) => setModelId(e.target.value)}
-                className="liquid-input text-xs font-mono w-full cursor-pointer py-2 px-3 rounded-lg border focus:ring-2 focus:ring-emerald-500/20 outline-none"
-                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
-              >
-                {(PROVIDER_MODELS[provider] || []).map((m) => (
-                  <option key={m.id} value={m.id} className="bg-zinc-900 text-white dark:bg-zinc-900">
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
 
             <form onSubmit={handleSaveKey} className="space-y-4">
               <div>
