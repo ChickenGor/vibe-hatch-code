@@ -81,6 +81,23 @@ const SvgIcon = ({ name, className = "w-3.5 h-3.5 inline-block shrink-0" }) => {
           <line x1="12" x2="12.01" y1="17" y2="17"/>
         </svg>
       );
+    case 'plus':
+    case 'diff':
+    case 'add':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" x2="12" y1="5" y2="19"/>
+          <line x1="5" x2="19" y1="12" y2="12"/>
+        </svg>
+      );
+    case 'bug':
+    case 'debug':
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="8" height="14" x="8" y="5" rx="4"/>
+          <path d="M12 2v3M12 19v3M8 12H2M22 12h-6M6 7l3 3M18 7l-3 3M6 17l3-3M18 17l-3-3"/>
+        </svg>
+      );
     case 'bolt':
     case 'lightning':
     case 'saas':
@@ -934,8 +951,10 @@ export default function VibeHatchWizard() {
     >
       {/* 1. LEFT SIDEBAR */}
       <aside
-        className={`border-r flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out hidden md:flex relative ${
-          isSidebarOpen ? 'w-60 p-4 opacity-100' : 'w-0 p-0 opacity-0 overflow-hidden border-r-0'
+        className={`border-r flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out fixed md:static inset-y-0 left-0 z-40 h-full md:h-screen ${
+          isSidebarOpen 
+            ? 'w-[280px] p-4 opacity-100 translate-x-0' 
+            : 'w-0 p-0 opacity-0 overflow-hidden border-r-0 -translate-x-full md:translate-x-0 md:flex'
         }`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
       >
@@ -991,11 +1010,11 @@ export default function VibeHatchWizard() {
 
           {/* Navigation Menu */}
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)', borderLeft: '2px solid #afea93' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer border-l-2 border-emerald-500" style={{ backgroundColor: 'var(--choice-hover)', color: 'var(--text-main)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Chat Assistant</span>
             </button>
-            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer">
+            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/[0.04] transition-all cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               <span>API Configuration</span>
             </button>
@@ -1004,24 +1023,24 @@ export default function VibeHatchWizard() {
           {/* Folder Groups */}
           <div className="mt-8 space-y-2">
             <div className="flex items-center justify-between px-2">
-              <span className="text-[9px] uppercase font-mono tracking-wider font-bold block" style={{ color: 'var(--text-dim)' }}>Saved Folders</span>
+              <span className="text-[9px] uppercase font-mono tracking-wider font-bold block text-[var(--text-dim)]">Saved Folders</span>
               <button 
                 onClick={handleAddFolder} 
-                className="text-xs text-zinc-500 hover:text-emerald-500 hover:scale-110 transition cursor-pointer font-bold" 
-                title="Create Folder"
+                className="text-xs text-zinc-550 hover:text-emerald-500 hover:scale-110 transition cursor-pointer font-bold" 
+                title="New folder"
               >
                 +
               </button>
             </div>
-            <div className="space-y-1 pl-2">
+            <div className="space-y-1 pl-1">
               {folders.map((folder) => (
                 <button 
                   key={folder} 
                   onClick={() => switchFolder(folder)}
                   className={`w-full text-left text-xs py-1.5 px-2 rounded-lg cursor-pointer truncate flex items-center gap-2 transition-all ${
                     activeFolder === folder 
-                      ? 'bg-[var(--choice-hover)] text-emerald-400 font-bold border-l-2 border-emerald-500 pl-1.5' 
-                      : 'text-zinc-400 hover:text-zinc-200'
+                      ? 'bg-[var(--choice-hover)] text-[var(--text-main)] font-semibold border-l-2 border-emerald-500 pl-1.5' 
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/[0.02] pl-2'
                   }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={activeFolder === folder ? "text-emerald-400" : "text-zinc-500"}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>
@@ -1035,9 +1054,9 @@ export default function VibeHatchWizard() {
         {/* Sidebar Bottom */}
         <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
           {customKeys[provider] ? (
-            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left space-y-2.5" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+            <div className="p-2.5 rounded-lg border text-[10px] font-mono leading-relaxed text-left space-y-2" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1 text-[9px]">
                   <span>Request Budget</span>
                   <span className={`font-bold ${
                     byokRequestsToday >= byokSafetyBudget ? 'text-rose-500 font-black' :
@@ -1045,9 +1064,9 @@ export default function VibeHatchWizard() {
                     'text-emerald-500'
                   }`}>{byokRequestsToday}/{byokSafetyBudget} req</span>
                 </div>
-                <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div className="w-full bg-zinc-800 rounded-full h-[3px]">
                   <div 
-                    className={`h-1 rounded-full transition-all duration-300 ${
+                    className={`h-[3px] rounded-full transition-all duration-300 ${
                       byokRequestsToday >= byokSafetyBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
                       byokRequestsToday >= byokSafetyBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
                       'bg-emerald-500'
@@ -1058,7 +1077,7 @@ export default function VibeHatchWizard() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1 text-[9px]">
                   <span>Token Budget</span>
                   <span className={`font-bold ${
                     byokTokensToday >= byokTokenBudget ? 'text-rose-500 font-black' :
@@ -1066,9 +1085,9 @@ export default function VibeHatchWizard() {
                     'text-emerald-500'
                   }`}>{byokTokensToday.toLocaleString()}/{byokTokenBudget.toLocaleString()}</span>
                 </div>
-                <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div className="w-full bg-zinc-800 rounded-full h-[3px]">
                   <div 
-                    className={`h-1 rounded-full transition-all duration-300 ${
+                    className={`h-[3px] rounded-full transition-all duration-300 ${
                       byokTokensToday >= byokTokenBudget ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse' :
                       byokTokensToday >= byokTokenBudget * 0.8 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' :
                       'bg-emerald-500'
@@ -1079,26 +1098,26 @@ export default function VibeHatchWizard() {
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-xl border text-[11px] font-mono leading-relaxed text-left" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
-              <div className="flex items-center justify-between mb-1">
+            <div className="p-2.5 rounded-lg border text-[10px] font-mono leading-relaxed text-left space-y-1.5" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}>
+              <div className="flex items-center justify-between mb-1 text-[9px]">
                 <span>Free Tier Quota</span>
                 <span className="text-emerald-500 font-bold">{sessionsLeft}/1</span>
               </div>
-              <div className="w-full bg-zinc-800 rounded-full h-1">
-                <div className="bg-emerald-500 h-1 rounded-full animate-pulse" style={{ width: sessionsLeft > 0 ? '100%' : '0%' }}></div>
+              <div className="w-full bg-zinc-800 rounded-full h-[3px]">
+                <div className="bg-emerald-500 h-[3px] rounded-full animate-pulse" style={{ width: sessionsLeft > 0 ? '100%' : '0%' }}></div>
               </div>
             </div>
           )}
 
-          {/* Theme toggler */}
+          {/* Theme toggler row */}
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border hover:brightness-110 transition cursor-pointer"
-            style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-main)' }}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition cursor-pointer hover:bg-white/[0.04]"
+            style={{ color: 'var(--text-muted)' }}
           >
             <span>Appearance</span>
-            <span className="text-[10px] flex items-center gap-1">
-              <SvgIcon name={theme === 'dark' ? 'sun' : 'moon'} className="w-3 h-3 text-[var(--text-main)] shrink-0" />
+            <span className="text-[10px] flex items-center gap-1.5 text-[var(--text-main)] font-semibold">
+              <SvgIcon name={theme === 'dark' ? 'sun' : 'moon'} className="w-3 h-3 shrink-0" />
               <span>{theme === 'dark' ? 'Opal' : 'Void'}</span>
             </span>
           </button>
@@ -1174,24 +1193,25 @@ export default function VibeHatchWizard() {
           )}
 
           {/* Dynamic Intent Selector Tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px] shadow-sm max-w-md w-full justify-between" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
+          <div className="flex items-center gap-1 p-1 rounded-xl border text-[10px] shadow-sm max-w-md w-full justify-between h-9" style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}>
             {[
-              { id: 'new_app', name: 'Build App', desc: 'Create app specifications from scratch' },
-              { id: 'add_feature', name: 'Add Feature', desc: 'Iterate or insert new code patterns' },
-              { id: 'solve_problem', name: 'Solve Bug', desc: 'Troubleshoot and write code fixes' },
-              { id: 'refactor_redesign', name: 'Redesign UI', desc: 'Refactor layout style sheets' }
+              { id: 'new_app', name: 'Build App', icon: 'saas', desc: 'Create app specifications from scratch' },
+              { id: 'add_feature', name: 'Add Feature', icon: 'plus', desc: 'Iterate or insert new code patterns' },
+              { id: 'solve_problem', name: 'Solve Bug', icon: 'debug', desc: 'Troubleshoot and write code fixes' },
+              { id: 'refactor_redesign', name: 'Redesign UI', icon: 'palette', desc: 'Refactor layout style sheets' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => switchIntent(tab.id)}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-semibold transition-all cursor-pointer text-center ${
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
                   intentMode === tab.id 
-                    ? 'bg-emerald-500 text-black font-black shadow-md scale-[1.01]' 
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-sm' 
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-emerald-500/5'
                 }`}
                 title={tab.desc}
               >
-                {tab.name}
+                <SvgIcon name={tab.icon} className={`w-3 h-3 shrink-0 ${intentMode === tab.id ? 'text-slate-950' : 'text-[var(--text-muted)] group-hover:text-[var(--text-main)]'}`} />
+                <span>{tab.name}</span>
               </button>
             ))}
           </div>
@@ -1236,15 +1256,13 @@ export default function VibeHatchWizard() {
 
         {/* Dynamic center workspace */}
         <div className="flex-1 overflow-hidden px-4 md:px-8 py-6 flex flex-col min-h-0">
-          
           {isChatFresh ? (
-            /* FRESH STATE: Elegant Centered Greeting (Viper layout style) */
-            <div className="max-w-2xl w-full mx-auto text-center space-y-8 my-auto animate-fade-in">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-light tracking-tight text-[var(--text-main)]">
+            <div className="max-w-2xl w-full mx-auto text-center space-y-6 mt-[10vh] mb-auto animate-fade-in">
+              <div className="space-y-1">
+                <h2 className="text-3xl font-bold tracking-tight text-[var(--text-main)]">
                   {greeting}, Creator.
                 </h2>
-                <h3 className="text-lg font-light" style={{ color: 'var(--text-muted)' }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mt-1.5">
                   {intentMode === 'new_app' ? 'What should we build today?' :
                    intentMode === 'add_feature' ? 'What features or changes are we planning?' :
                    intentMode === 'solve_problem' ? 'What bug or error trace should we solve?' :
@@ -1260,8 +1278,8 @@ export default function VibeHatchWizard() {
                 </div>
               )}
               <div 
-                className="w-full border rounded-2xl p-3 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left"
-                style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
+                className="w-full border rounded-2xl p-3.5 shadow-sm transition-all text-left focus-within:ring-2 focus-within:ring-emerald-500/10 focus-within:border-emerald-500/40 focus-within:shadow-[0_0_12px_rgba(175,234,147,0.06)]"
+                style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
               >
                 <textarea
                   className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] resize-none h-16 placeholder-zinc-400 pr-8"
@@ -1278,14 +1296,14 @@ export default function VibeHatchWizard() {
                   autoFocus
                 />
                 <div 
-                  className="flex items-center justify-between pt-2 border-t mt-2"
+                  className="flex items-center justify-between pt-2.5 border-t mt-2"
                   style={{ borderColor: 'var(--glass-border)' }}
                 >
                   <div className="flex items-center gap-2">
                     <button 
                       type="button" 
                       onClick={() => setIsModalOpen(true)} 
-                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)] flex items-center justify-center" 
+                      className="p-1 rounded text-zinc-400 transition hover:text-[var(--text-main)] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer" 
                       title="API Configuration"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1293,7 +1311,7 @@ export default function VibeHatchWizard() {
                     <button 
                       type="button" 
                       onClick={() => setIsParamsOpen(true)}
-                      className="p-1 rounded text-zinc-400 transition hover:bg-[var(--choice-hover)] flex items-center justify-center" 
+                      className="p-1 rounded text-zinc-400 transition hover:text-[var(--text-main)] hover:bg-white/[0.04] flex items-center justify-center cursor-pointer" 
                       title="Prompt Parameters"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5 5 3Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg>
@@ -1304,11 +1322,11 @@ export default function VibeHatchWizard() {
                       <button
                         type="button"
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="text-[9px] font-mono text-zinc-500 hover:text-zinc-300 uppercase font-semibold flex items-center gap-1 transition select-none cursor-pointer"
+                        className="text-[10px] font-mono text-zinc-500 hover:text-zinc-300 font-semibold flex items-center gap-1 transition select-none cursor-pointer px-2 py-1 rounded-md hover:bg-white/[0.04]"
                         title="Change LLM Model"
                       >
                         <span>{getActiveModelLabel()}</span>
-                        <span className="text-[7px] text-zinc-500/80">▼</span>
+                        <span className="text-[8px] text-zinc-500/80">▼</span>
                       </button>
 
                       {isModelDropdownOpen && (
@@ -1353,11 +1371,14 @@ export default function VibeHatchWizard() {
                       type="button"
                       disabled={isLoading || !chatInput.trim()}
                       onClick={handleSendMessage}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition ${
-                        theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold transition-all duration-150 cursor-pointer ${
+                        isLoading || !chatInput.trim()
+                          ? 'bg-emerald-500/20 text-zinc-600 cursor-not-allowed'
+                          : 'bg-emerald-500 text-slate-950 hover:scale-[1.05] hover:brightness-110 active:scale-[0.96] shadow-sm'
                       }`}
+                      title="Send Message"
                     >
-                      ↑
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1369,10 +1390,10 @@ export default function VibeHatchWizard() {
                   <button
                     key={bp.label}
                     onClick={() => handleSendMessage(null, bp.prompt)}
-                    className="px-3 py-1.5 rounded-lg border text-[10px] transition cursor-pointer hover:border-emerald-500/50 hover:text-emerald-500 flex items-center gap-1.5"
+                    className="h-8 px-3.5 rounded-lg border text-[10px] transition-all duration-150 cursor-pointer flex items-center gap-1.5 hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-emerald-400"
                     style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)', color: 'var(--text-muted)' }}
                   >
-                    <SvgIcon name={bp.icon} className="w-3 h-3 shrink-0" />
+                    <SvgIcon name={bp.icon} className="w-3.5 h-3.5 shrink-0" />
                     <span>{bp.label}</span>
                   </button>
                 ))}
@@ -1463,8 +1484,8 @@ export default function VibeHatchWizard() {
                   </div>
                 )}
                 <div 
-                  className="w-full border rounded-2xl p-2.5 shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/30 transition-all text-left flex gap-2 items-center"
-                  style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--input-border)' }}
+                  className="w-full border rounded-2xl p-2.5 shadow-sm transition-all text-left flex gap-2 items-center focus-within:ring-2 focus-within:ring-emerald-500/10 focus-within:border-emerald-500/40 focus-within:shadow-[0_0_12px_rgba(175,234,147,0.06)]"
+                  style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
                 >
                   <input
                     type="text"
@@ -1485,11 +1506,11 @@ export default function VibeHatchWizard() {
                       <button
                         type="button"
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="text-[9px] font-mono text-zinc-500 hover:text-zinc-300 uppercase font-semibold flex items-center gap-1 transition select-none cursor-pointer"
+                        className="text-[10px] font-mono text-zinc-500 hover:text-zinc-300 font-semibold flex items-center gap-1 transition select-none cursor-pointer px-2 py-1 rounded-md hover:bg-white/[0.04]"
                         title="Change LLM Model"
                       >
                         <span>{getActiveModelLabel()}</span>
-                        <span className="text-[7px] text-zinc-500/80">▼</span>
+                        <span className="text-[8px] text-zinc-500/80">▼</span>
                       </button>
 
                       {isModelDropdownOpen && (
@@ -1534,11 +1555,14 @@ export default function VibeHatchWizard() {
                       type="button"
                       disabled={isLoading || !chatInput.trim()}
                       onClick={handleSendMessage}
-                      className={`w-6 h-6 rounded-full flex items-center justify-center font-bold hover:opacity-85 active:scale-95 transition shrink-0 ${
-                        theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold transition-all duration-150 cursor-pointer shrink-0 ${
+                        isLoading || !chatInput.trim()
+                          ? 'bg-emerald-500/20 text-zinc-600 cursor-not-allowed'
+                          : 'bg-emerald-500 text-slate-950 hover:scale-[1.05] hover:brightness-110 active:scale-[0.96] shadow-sm'
                       }`}
+                      title="Send Message"
                     >
-                      ↑
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="19" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1586,45 +1610,61 @@ export default function VibeHatchWizard() {
       <section
         className={`border-l flex flex-col transition-all duration-300 ease-in-out fixed lg:static inset-y-0 right-0 z-30 h-full lg:h-screen shrink-0 relative ${
           isPreviewOpen 
-            ? 'w-full sm:w-[400px] lg:w-[420px] opacity-100 translate-x-0' 
+            ? 'w-full sm:w-[400px] lg:w-[400px] opacity-100 translate-x-0' 
             : 'w-0 opacity-0 overflow-hidden border-l-0 translate-x-full lg:translate-x-0'
         }`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)' }}
       >
-        <div className="p-4 flex flex-col h-full justify-between overflow-y-auto">
-          {/* Header Close button for Mobile/Tablet */}
-          <div className="flex justify-end mb-2 shrink-0">
+        <div className="p-4 flex flex-col h-full overflow-y-auto justify-start">
+          {/* Header Close button & Title */}
+          <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b shrink-0" style={{ borderColor: 'var(--glass-border)' }}>
+            <span className="text-xs font-bold text-[var(--text-main)] font-mono uppercase tracking-wider">Generated Spec</span>
             <button
               onClick={() => setIsPreviewOpen(false)}
-              className="p-1 rounded text-zinc-400 hover:text-white transition cursor-pointer hover:bg-[var(--choice-hover)] flex items-center justify-center gap-1 text-[10px]"
-              title="Close Panel"
+              className="p-1 rounded text-zinc-400 hover:text-white transition cursor-pointer hover:bg-[var(--choice-hover)] flex items-center justify-center"
+              title="Close output"
             >
-              <span>Close Output</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
           </div>
           
           {versions.length === 0 && !isCompiling ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6 my-auto select-none">
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto select-none">
               <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border relative"
+                className="w-12 h-12 rounded-2xl flex items-center justify-center shadow border relative"
                 style={{ backgroundColor: 'var(--choice-bg)', borderColor: 'var(--input-border)' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-                <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <span className="absolute -bottom-1 -right-1 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
               </div>
-              <div className="space-y-2">
-                <h4 className="text-sm font-black tracking-tight text-emerald-500">Prompt Output Chamber</h4>
-                <p className="text-[11px] max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                  Your compiled developer instructions, directory blueprints, and tech stack constraints will manifest here.
+              <div className="space-y-1.5 mt-4">
+                <h4 className="text-[12px] font-bold text-[var(--text-main)]">Your developer specification will appear here</h4>
+                <p className="text-[10px] max-w-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  Complete the requirements with the assistant, then generate a structured implementation prompt.
                 </p>
               </div>
-              <div className="text-[10px] font-mono p-3 rounded-lg border border-dashed text-zinc-500 flex items-start gap-1.5" style={{ borderColor: 'var(--input-border)', backgroundColor: 'var(--choice-bg)' }}>
-                <SvgIcon name="idea" className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                <span>Click "Hatch Developer Prompt" once requirements gathering is complete!</span>
+
+              {/* Muted Skeleton Output Cards */}
+              <div className="w-full space-y-2 pt-6 text-left max-w-xs">
+                <div className="text-[8px] uppercase font-mono tracking-wider text-[var(--text-dim)] font-semibold mb-2">Expected Output Sections</div>
+                {[
+                  { title: '1. Requirements & Spec Sheet', desc: 'Scope, user flows, and core specifications' },
+                  { title: '2. System Architecture', desc: 'Client components, database constraints, state' },
+                  { title: '3. Customized Tech Stack', desc: 'Vite/Next.js routes and frameworks config' },
+                  { title: '4. File Structure Blueprints', desc: 'Structured folder hierarchies and path tags' },
+                  { title: '5. Detailed Implementation Steps', desc: 'Code blocks and line-by-line tasks' }
+                ].map((sec) => (
+                  <div key={sec.title} className="p-2 border rounded-lg" style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--choice-bg)' }}>
+                    <div className="text-[9px] font-bold text-[var(--text-muted)] flex items-center gap-1.5">
+                      <div className="w-1 h-1 rounded-full bg-[var(--text-dim)] opacity-40 shrink-0" />
+                      <span>{sec.title}</span>
+                    </div>
+                    <div className="text-[8px] text-[var(--text-dim)] pl-2.5 mt-0.5">{sec.desc}</div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
