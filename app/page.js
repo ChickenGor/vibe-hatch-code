@@ -404,6 +404,13 @@ const analyzePromptQuality = (promptText, mode, detail, agent, stack, dbRequirem
   };
 };
 
+const updateFileContentInPrompt = (promptText, filePath, newCode) => {
+  if (!promptText || !filePath) return promptText;
+  const escapedPath = filePath.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(`(<file\\s+path="${escapedPath}"[^>]*>)([\\s\\S]*?)(<\\/file>)`, 'gi');
+  return promptText.replace(regex, `$1\n${newCode}\n$3`);
+};
+
 const getFollowUpPrompts = (mode, appName, selectedStack) => {
   const stackLabel = selectedStack && selectedStack.length > 0 ? selectedStack.join(' and ') : 'the established stack';
   
@@ -2037,31 +2044,46 @@ export default function VibeHatchWizard() {
 
                     if (selectedFile) {
                       const activeCode = parsedFiles[selectedFile] || '';
+                      
+                      const handleEditCode = (newCode) => {
+                        const updatedPrompt = updateFileContentInPrompt(currentPromptContent, selectedFile, newCode);
+                        const updatedVersions = [...versions];
+                        updatedVersions[currentVersionIdx] = updatedPrompt;
+                        setVersions(updatedVersions);
+                      };
+
                       return (
-                        <div className="flex-1 flex flex-col h-full text-left font-sans animate-fade-in">
+                        <div className="flex-1 flex flex-col h-full text-left font-sans animate-fade-in space-y-2">
                           {/* File editor controls */}
-                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 shrink-0">
+                          <div className="flex items-center justify-between pb-2 border-b border-zinc-800 shrink-0">
                             <button
                               onClick={() => setSelectedFile(null)}
                               className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 transition cursor-pointer font-bold inline-flex items-center gap-1"
                             >
                               ← Tree
                             </button>
-                            <span className="text-[10px] font-mono text-zinc-400 font-bold truncate max-w-[150px]">{selectedFile}</span>
+                            <div className="flex flex-col items-center max-w-[180px]">
+                              <span className="text-[10px] font-mono text-zinc-350 font-bold truncate w-full text-center">{selectedFile.split('/').pop()}</span>
+                              <span className="text-[7px] font-mono text-emerald-400 uppercase tracking-wider font-bold">Editing Live</span>
+                            </div>
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText(activeCode);
                                 alert(`Copied code for ${selectedFile}`);
                               }}
-                              className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[9px] text-emerald-400 border border-emerald-500/20 transition cursor-pointer font-bold"
+                              className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[9px] text-emerald-450 border border-emerald-500/20 transition cursor-pointer font-bold"
                             >
-                              Copy File
+                              Copy
                             </button>
                           </div>
-                          {/* Code viewport container */}
-                          <pre className="flex-1 p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 font-mono text-[10px] text-zinc-300 overflow-auto whitespace-pre select-all max-h-[420px]">
-                            <code>{activeCode}</code>
-                          </pre>
+                          {/* Code edit textarea */}
+                          <textarea
+                            value={activeCode}
+                            onChange={(e) => handleEditCode(e.target.value)}
+                            className="flex-1 w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 font-mono text-[10px] text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 overflow-auto whitespace-pre leading-relaxed select-text"
+                            style={{ height: '380px', resize: 'vertical' }}
+                            placeholder="Write code or specifications..."
+                          />
                         </div>
                       );
                     }
