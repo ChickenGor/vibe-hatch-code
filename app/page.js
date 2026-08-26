@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
+import Editor from '@monaco-editor/react';
 
 const SvgIcon = ({ name, className = "w-3.5 h-3.5 inline-block shrink-0" }) => {
   switch (name) {
@@ -402,6 +403,30 @@ const analyzePromptQuality = (promptText, mode, detail, agent, stack, dbRequirem
     tokenEstimate: tokens,
     recommendation
   };
+};
+
+const getLanguageFromFilename = (filename) => {
+  if (!filename) return 'javascript';
+  const ext = filename.split('.').pop() || '';
+  const mapping = {
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    json: 'json',
+    html: 'html',
+    css: 'css',
+    py: 'python',
+    dart: 'dart',
+    prisma: 'prisma',
+    sql: 'sql',
+    md: 'markdown',
+    yaml: 'yaml',
+    yml: 'yaml',
+    sh: 'shell',
+    bash: 'shell',
+  };
+  return mapping[ext.toLowerCase()] || 'javascript';
 };
 
 const updateFileContentInPrompt = (promptText, filePath, newCode) => {
@@ -2076,14 +2101,30 @@ export default function VibeHatchWizard() {
                               Copy
                             </button>
                           </div>
-                          {/* Code edit textarea */}
-                          <textarea
-                            value={activeCode}
-                            onChange={(e) => handleEditCode(e.target.value)}
-                            className="flex-1 w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 font-mono text-[10px] text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 overflow-auto whitespace-pre leading-relaxed select-text"
-                            style={{ height: '380px', resize: 'vertical' }}
-                            placeholder="Write code or specifications..."
-                          />
+                          {/* Code edit Monaco Editor */}
+                          <div className="flex-1 w-full rounded-lg overflow-hidden border border-zinc-850 bg-zinc-950/80 p-1" style={{ minHeight: '380px' }}>
+                            <Editor
+                              height="380px"
+                              language={getLanguageFromFilename(selectedFile)}
+                              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                              value={activeCode}
+                              onChange={(val) => handleEditCode(val || '')}
+                              loading={<div className="p-4 text-[10px] text-zinc-500 font-mono">Loading Monaco Editor...</div>}
+                              options={{
+                                fontSize: 10,
+                                fontFamily: 'Plus Jakarta Sans, monospace',
+                                minimap: { enabled: false },
+                                lineNumbers: 'on',
+                                scrollbar: {
+                                  vertical: 'auto',
+                                  horizontal: 'auto'
+                                },
+                                automaticLayout: true,
+                                readOnly: false,
+                                contextmenu: false,
+                              }}
+                            />
+                          </div>
                         </div>
                       );
                     }
